@@ -34,49 +34,55 @@ public class HttpHeader {
     }
     
     public static void setLoginInitHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         setBaseHeader(http);
-        http.setHeader("Referer", UrlConstants.REF_LOGINPASSCODE_URL);
+        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
+        http.setHeader("Referer", UrlConstants.REF_WEBSITEROOT_URL);
     }
     
     public static void setLoginAuthCodeHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "*/*");
         setBaseHeader(http);
-        http.setHeader("Referer", UrlConstants.REF_LOGINPASSCODE_URL);
+        http.setHeader("Accept", "*/*");
+        http.setHeader("Referer", UrlConstants.REF_WEBSITEROOT_URL);
     }
 
     /**
-     * checkAuthcode & checkLogin 共用header设置
+     * 通用ajax请求header设置
      * 
     **/
-    public static void setCheckHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "*/*");
+    public static void setCommonAjaxHeader(HttpRequestBase http) {
         setBaseHeader(http);
+        http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_LOGINPASSCODE_URL);
+        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
     
-    public static void setLoginHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
+    public static void setLogoutHeader(HttpRequestBase http) {
         setBaseHeader(http);
+        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
+        http.setHeader(REFERER, "https://kyfw.12306.cn/otn/index/init");
+    }
+    
+    public static void setLoginHeader(HttpRequestBase http) {
+        setBaseHeader(http);
+        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_LOGINPASSCODE_URL);
+        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
     }
     
     public static void setTiketInitHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         setBaseHeader(http);
+        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
         http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
     }
     
     public static void setTiketSearchHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "*/*");
         setBaseHeader(http);
+        http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader("If-Modified-Since", "0");
         http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
@@ -84,8 +90,8 @@ public class HttpHeader {
     }
     
     public static void setSubmitOrderHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "*/*");
         setBaseHeader(http);
+        http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
         http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
@@ -93,8 +99,8 @@ public class HttpHeader {
     }
     
     public static void setInitDcHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         setBaseHeader(http);
+        http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
         http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
@@ -105,8 +111,8 @@ public class HttpHeader {
      * 
      */
     public static void setCheckOrderHeader(HttpRequestBase http) {
-        http.setHeader("Accept", "application/json, text/javascript, */*; q=0.01");
         setBaseHeader(http);
+        http.setHeader("Accept", "application/json, text/javascript, */*; q=0.01");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
         http.setHeader(REFERER, UrlConstants.REQ_INITDC_URL);

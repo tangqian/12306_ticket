@@ -16,6 +16,10 @@ public class UrlConstants {
 	public final static String REQ_CHECKCODE_URL = "https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn";
 	// 登录验证url
 	public final static String REQ_LOGINAYSNSUGGEST_URL = "https://kyfw.12306.cn/otn/login/loginAysnSuggest";
+	//获取常用联系人信息
+	public final static String REQ_GETPASSENGER_URL = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
+	// 退出url
+    public final static String REQ_LOGOUT_URL = "https://kyfw.12306.cn/otn/login/loginOut";
 	// 登录url
 	public final static String REQ_LOGIN_URL = "https://kyfw.12306.cn/otn/login/userLogin";
 	// 查询余票initurl
@@ -35,8 +39,8 @@ public class UrlConstants {
 	// 查询等待时间url
 	public final static String REQ_QUERYORDERWAIT_URL = "https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime";
 
-	// 登录请求相关ref
-	public final static String REF_LOGINPASSCODE_URL = "https://kyfw.12306.cn/otn/login/init";
+	// 12306网站根目录ref
+	public final static String REF_WEBSITEROOT_URL = "https://kyfw.12306.cn/";
 	// 查询余票init相关ref
 	public final static String REF_INITTICKET_URL = "https://kyfw.12306.cn/otn/index/init";
 	// 查询余票相关ref

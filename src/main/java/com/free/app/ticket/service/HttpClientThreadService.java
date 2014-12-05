@@ -33,8 +33,9 @@ public class HttpClientThreadService extends Thread {
                     icon.setImage(icon.getImage()
                         .getScaledInstance(icon.getIconWidth(), icon.getIconHeight(), Image.SCALE_DEFAULT));
                     LogPanelManager.setIcon(icon);
-                    TicketMainFrame.trace("获取验证码成功");
                     TicketMainFrame.isInited = true;
+                    TicketMainFrame.trace("获取验证码成功");
+                    
                 }
                 else {
                     ImageIcon icon = ResManager.createImageIcon("nocode.jpg");
@@ -45,7 +46,18 @@ public class HttpClientThreadService extends Thread {
         }
     }
     
+    
+    
     public static TicketHttpClient getHttpClient() {
         return httpClient;
+    }
+    
+    /**
+     * <重启httpClient>
+     *
+     */
+    public static void restart() {
+        httpClient = null;
+        new HttpClientThreadService().run();
     }
 }

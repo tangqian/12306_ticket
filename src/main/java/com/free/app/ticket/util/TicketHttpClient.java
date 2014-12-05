@@ -44,7 +44,9 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.free.app.ticket.TicketMainFrame;
+import com.free.app.ticket.model.ContacterInfo;
 import com.free.app.ticket.model.JsonMsg4Authcode;
+import com.free.app.ticket.model.JsonMsg4Contacter;
 import com.free.app.ticket.model.JsonMsg4Login;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
@@ -201,7 +203,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair(Constants.RANDCODE_VALIDATE, ""));
         
         HttpPost post = getHttpPost(UrlConstants.REQ_CHECKCODE_URL, null);
-        HttpHeader.setCheckHeader(post);
+        HttpHeader.setCommonAjaxHeader(post);
         
         boolean result = false;
         try {
@@ -220,6 +222,28 @@ public class TicketHttpClient {
         return result;
     }
     
+    public ContacterInfo[] getPassengers() {
+        HttpPost post = getHttpPost(UrlConstants.REQ_GETPASSENGER_URL, null);
+        HttpHeader.setCommonAjaxHeader(post);
+        
+        ContacterInfo[] result = null;
+        try {
+            String checkResult = doPostRequest(post, null, true);
+            logger.info(checkResult);
+            JsonMsg4Contacter msg = JSONObject.parseObject(checkResult, JsonMsg4Contacter.class);
+            System.out.println(msg);
+            if (msg.getStatus()) {
+                result = msg.getData().getNormal_passengers();
+            }
+        }
+        catch (Exception e) {
+            logger.error("获取联系人异常", e);
+            TicketMainFrame.remind("获取联系人异常,请稍后再试");
+        }
+        
+        return result;
+    }
+    
     /**
      * <登录检查>
      * @param username
@@ -229,7 +253,7 @@ public class TicketHttpClient {
      */
     public String checkLogin(String username, String password, String authcode) {
         boolean checkCodeResult = checkLoginAuthcode(authcode);//先检查验证码
-        if(!checkCodeResult){
+        if (!checkCodeResult) {
             return "验证码不正确！";
         }
         
@@ -242,7 +266,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("myversion", "undefined"));
         
         HttpPost post = getHttpPost(UrlConstants.REQ_LOGINAYSNSUGGEST_URL, null);
-        HttpHeader.setCheckHeader(post);
+        HttpHeader.setCommonAjaxHeader(post);
         
         String result = null;
         try {
@@ -264,6 +288,27 @@ public class TicketHttpClient {
     }
     
     /**
+     * <退出>
+     * @param username
+     * @param password
+     * @param authcode
+     * @return null代表成功，否则返回登录失败原因
+     */
+    public void loginOut() {
+        HttpPost post = getHttpPost(UrlConstants.REQ_LOGOUT_URL, null);
+        HttpHeader.setLogoutHeader(post);
+        
+        try {
+            String checkResult = doPostRequest(post, null, false);
+            logger.info(checkResult);
+        }
+        catch (Exception e) {
+            logger.error("退出发生异常", e);
+        }
+        TicketMainFrame.trace("退出成功!");
+    }
+    
+    /**
      * <公用POST请求方法>
      * @param http
      * @param params
@@ -277,9 +322,11 @@ public class TicketHttpClient {
         
         InputStream is = null;
         try {
-            UrlEncodedFormEntity uef = new UrlEncodedFormEntity(params, "UTF-8");
-            request.setEntity(uef);
-            logger.info(URLEncodedUtils.format(params, "UTF-8"));
+            if (params != null) {
+                UrlEncodedFormEntity uef = new UrlEncodedFormEntity(params, "UTF-8");
+                request.setEntity(uef);
+                logger.info(URLEncodedUtils.format(params, "UTF-8"));
+            }
             HttpResponse response = httpclient.execute(request);
             is = response.getEntity().getContent();
             if (isGzip) {
@@ -288,6 +335,12 @@ public class TicketHttpClient {
             else {
                 responseBody = readInputStream(is);
             }
+            
+            /*Header[] headers = response.getAllHeaders();
+            System.out.println("-----headers----------");
+            for (int i = 0; i < headers.length; i++) {
+                System.out.println(headers[i].getName() + "=" + headers[i].getValue());
+            }*/
         }
         catch (Exception e) {
             logger.error("doPostRequest error:", e);

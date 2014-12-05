@@ -2,13 +2,11 @@ package com.free.app.ticket.service;
 
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.util.TicketHttpClient;
-import com.free.app.ticket.view.LoginPanel;
+import com.free.app.ticket.view.LogPanelManager;
 
 public class LoginThreadService extends Thread {
     
     //private static final Logger logger = LoggerFactory.getLogger(CheckAuthcodeThreadService.class);
-    
-    private LoginPanel panel;
     
     private String username;
     
@@ -16,8 +14,7 @@ public class LoginThreadService extends Thread {
     
     private String authcode;
     
-    public LoginThreadService(LoginPanel panel, String username, String password, String authcode) {
-        this.panel = panel;
+    public LoginThreadService(String username, String password, String authcode) {
         this.username = username;
         this.password = password;
         this.authcode = authcode;
@@ -30,17 +27,25 @@ public class LoginThreadService extends Thread {
             String result = client.checkLogin(username, password, authcode);
             if (result == null) {
                 TicketMainFrame.trace("登录成功!");
-                panel.loginBtn.setVisible(false);
-                //panel.logoutBtn.setVisible(true);
+                LogPanelManager.toggle();
             }
             else {
-                if ("randCodeError".equals(result) ) {//验证码错误时不重新获取验证码
+                if ("randCodeError".equals(result)) {//验证码错误时不重新获取验证码
                     result = "验证码不正确！";
                 }
-                new HttpClientThreadService().start();//重新获取验证码
+                if (result.startsWith("密码输入错误")) {
+                    LogPanelManager.requestFocus2Password();
+                }
+                else if (result.startsWith("登录名不存在")) {
+                    LogPanelManager.requestFocus2Username();
+                }
+                else if (result.startsWith("验证码")) {
+                    LogPanelManager.requestFocus2Authcode();
+                }
                 TicketMainFrame.alert(result);
+                new HttpClientThreadService().start();//重新获取验证码
             }
         }
-        panel.loginBtn.dsLogging();
+        LogPanelManager.setLoginEnabled();
     }
 }
