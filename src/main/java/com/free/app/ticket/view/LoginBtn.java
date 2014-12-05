@@ -66,7 +66,7 @@ public class LoginBtn extends JButton {
                 
                 if(!isLogging){
                     isLogging = true;
-                    new LoginThreadService(panel, username, pwd, authcode).start();
+                    new LoginThreadService(username, pwd, authcode).start();
                 }
                 
                 
