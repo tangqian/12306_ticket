@@ -3,12 +3,13 @@ package com.free.app.ticket.view;
 import javax.swing.ImageIcon;
 
 import com.free.app.ticket.TicketMainFrame;
+import com.free.app.ticket.model.MixData4UI;
 
 /**
  * 
  * <登录登出面板UI管理类>
  */
-public class LogPanelManager {
+public class LoginPanelManager {
     
     private static LoginPanel login_panel = null;
     
@@ -84,6 +85,14 @@ public class LogPanelManager {
     public static void setIcon(ImageIcon icon) {
         login_panel.code.setIcon(icon);
     }
+
+	public static void bindUItoModel(MixData4UI mixData) {
+		mixData.setUserName(login_panel.username.getText());
+	}
+
+	public static void bindModeltoUI(MixData4UI mixData) {
+		login_panel.username.setText(mixData.getUserName());
+	}
 
 
 

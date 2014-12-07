@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.util.ResManager;
 import com.free.app.ticket.util.TicketHttpClient;
-import com.free.app.ticket.view.LogPanelManager;
+import com.free.app.ticket.view.LoginPanelManager;
 
 public class HttpClientThreadService extends Thread {
     
@@ -32,14 +32,14 @@ public class HttpClientThreadService extends Thread {
                     ImageIcon icon = new ImageIcon(imageFile.getAbsolutePath());
                     icon.setImage(icon.getImage()
                         .getScaledInstance(icon.getIconWidth(), icon.getIconHeight(), Image.SCALE_DEFAULT));
-                    LogPanelManager.setIcon(icon);
+                    LoginPanelManager.setIcon(icon);
                     TicketMainFrame.isInited = true;
                     TicketMainFrame.trace("获取验证码成功");
                     
                 }
                 else {
                     ImageIcon icon = ResManager.createImageIcon("nocode.jpg");
-                    LogPanelManager.setIcon(icon);
+                    LoginPanelManager.setIcon(icon);
                     TicketMainFrame.remind("获取验证码失败,请检查网络是否正常");
                 }
             }

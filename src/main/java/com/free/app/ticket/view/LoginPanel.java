@@ -1,5 +1,6 @@
 package com.free.app.ticket.view;
 
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -42,9 +43,10 @@ class LoginPanel extends JPanel {
     JTextField authcode;
     
     public LoginPanel() {
-        this.setBounds(10, 12, 650, 54);
-        this.setLayout(null);
-        this.setBorder(new TitledBorder(ResManager.getText("ticket.panel.userinfo")));
+        //this.setBounds(10, 12, 650, 54);
+        this.setBounds(10, 68, 780, 54);
+        this.setLayout(new FlowLayout());
+        this.setBorder(new TitledBorder("第二步：用户登录"));
         
         JLabel label_o = new JLabel(ResManager.getText("ticket.label.user_name"));
         label_o.setBounds(10, 26, 40, 15);
@@ -55,7 +57,7 @@ class LoginPanel extends JPanel {
         username.setName("username");
         username.setBounds(60, 23, 100, 21);
         this.add(username);
-        username.setColumns(10);
+        username.setColumns(20);
         
         JLabel label_o1 = new JLabel(ResManager.getText("ticket.label.password"));
         label_o1.setBounds(170, 26, 40, 15);
@@ -66,7 +68,7 @@ class LoginPanel extends JPanel {
         password.setName("password");
         password.setBounds(220, 23, 100, 21);
         this.add(password);
-        password.setColumns(10);
+        password.setColumns(20);
         
         code = new JLabel();
         code.setBounds(341, 18, 78, 28);

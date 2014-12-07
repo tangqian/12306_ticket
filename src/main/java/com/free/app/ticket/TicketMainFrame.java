@@ -1,38 +1,40 @@
 package com.free.app.ticket;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.ParseException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.MaskFormatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.free.app.ticket.model.MixData4UI;
 import com.free.app.ticket.service.HttpClientThreadService;
+import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.ResManager;
 import com.free.app.ticket.view.ConfigPanelManager;
 import com.free.app.ticket.view.ConsolePane;
-import com.free.app.ticket.view.LogPanelManager;
+import com.free.app.ticket.view.LoginPanelManager;
 import com.free.app.ticket.view.PassengerPanelManager;
+import com.free.app.ticket.view.RefreshPanelManager;
 
 /**
  * 主窗口类
@@ -45,12 +47,12 @@ public class TicketMainFrame extends JFrame {
 	private static final long serialVersionUID = 4187140706289820520L;
 
 	/**************** 日志对象 ****************/
-	private static final Logger logger = LoggerFactory.getLogger(TicketMainFrame.class);
-	//主窗口
+	private static final Logger logger = LoggerFactory
+			.getLogger(TicketMainFrame.class);
+	// 主窗口
 	public static TicketMainFrame frame;
 
 	/************** 登录相关 *********************/
-
 
 	/************** 联系人 *****************/
 
@@ -64,134 +66,164 @@ public class TicketMainFrame extends JFrame {
 	public JButton startButton;
 
 	/************* 输出相关 ****************/
-	//private static JScrollPane scrollPaneLogger;
-    private static ConsolePane consolePane;
-    
-    /**
-     * 是否已初始化，即已经获取过登录验证码，在点击登录时需要先判断这个条件
-     */
-    public static boolean isInited = false;
+	// private static JScrollPane scrollPaneLogger;
+	private static ConsolePane consolePane;
+
+	/**
+	 * 是否已初始化，即已经获取过登录验证码，在点击登录时需要先判断这个条件
+	 */
+	public static boolean isInited = false;
 
 	/************** 业务逻辑相关的变量 ****************/
-	/*// 存放用户信息
-	public List<UserInfo> userInfoList = null;
-	// 存放查询火车实体
-	private TicketSearch req;
-	// 项目根路径
-	public static String path;
-	// 类本身
-	public TicketMainFrame mainWin = this;
-	// 登录验证码路径
-	public String loginUrl;
-	// 提交订单验证码路径
-	public String submitUrl;
-	// 是否登录成功
-	public boolean isLogin = false;
-	// 线程是否运行
-	public boolean isRunThread = false;
-	// 是否点击了停止按钮
-	public boolean isStopRun = false;*/
-	/*// client
-	public ClientCore client = new ClientCore();*/
+	/*
+	 * // 存放用户信息 public List<UserInfo> userInfoList = null; // 存放查询火车实体 private
+	 * TicketSearch req; // 项目根路径 public static String path; // 类本身 public
+	 * TicketMainFrame mainWin = this; // 登录验证码路径 public String loginUrl; //
+	 * 提交订单验证码路径 public String submitUrl; // 是否登录成功 public boolean isLogin =
+	 * false; // 线程是否运行 public boolean isRunThread = false; // 是否点击了停止按钮 public
+	 * boolean isStopRun = false;
+	 */
+	/*
+	 * // client public ClientCore client = new ClientCore();
+	 */
 
 	// 静态构造块
-	/*static {
-		// 获取当前jar包的目录
-		path = System.getProperty("user.dir") + File.separator;
-		logger.debug("mainWin path = " + path);
-	}*/
-	
-    public static void main(String[] arg0) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    frame = new TicketMainFrame();
-                    frame.setVisible(true);
-                }
-                catch (Exception e) {
-                    logger.error("init mainframe error : ", e);
-                }
-            }
-        });
-    }
+	/*
+	 * static { // 获取当前jar包的目录 path = System.getProperty("user.dir") +
+	 * File.separator; logger.debug("mainWin path = " + path); }
+	 */
 
-    public TicketMainFrame() {
-        initView();
-        new HttpClientThreadService().start();
-    }
+	public static void main(String[] arg0) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					UIManager.setLookAndFeel(UIManager
+							.getSystemLookAndFeelClassName());
+					frame = new TicketMainFrame();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					logger.error("init mainframe error : ", e);
+				}
+			}
+		});
+	}
 
+	public TicketMainFrame() {
+		initView();
+		new HttpClientThreadService().start();
+	}
 
 	/**
 	 * 初始化界面
 	 */
 	public void initView() {
-		setTitle(ResManager.getText("ticket.mainframe.title"));
+		setTitle("2015，我要回家");
 		setIconImage(ResManager.createImageIcon("logo.jpg").getImage());
-		setBounds(50, 50, 670, 640);
+		setBounds(50, 50, 800, 700);
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		ToolTipManager.sharedInstance().setInitialDelay(0);
 		getContentPane().setLayout(null);
+		final String filePath = System.getProperty("user.dir") + File.separator
+				+ "12306.dat";
 		// 关闭窗口 保存相关用户信息
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				// 保存用户实体
-				/*try {
-					ToolHelper.getUserInfo(path, "data" + File.separator + "UI.dat", username, password, linkman1_name, linkman1_cardNo, linkman1_mobile, linkman2_name, linkman2_cardNo,
-							linkman2_mobile, linkman3_name, linkman3_cardNo, linkman3_mobile, linkman4_name, linkman4_cardNo, linkman4_mobile, linkman5_name, linkman5_cardNo, linkman5_mobile,
-							formCode, toCode);
+				try {
+					ObjectOutputStream out = new ObjectOutputStream(
+							new FileOutputStream(filePath));
+					out.writeObject(frame.bindUItoModel());
+					out.close();
+					logger.debug("Saved UI data to file: {}", filePath);
 				} catch (Exception ex) {
-					logger.error("save user data file Failure!", ex);
-				}*/
+					logger.error("save UI data file Failure!", ex);
+				}
+			}
+			
+			@Override
+			public void windowOpened(WindowEvent event) {
+				try {
+					// 基于上次保存的dat数据文件恢复UI组件初始值
+					File inFile = new File(filePath);
+					if (!inFile.exists()) {
+						return;
+					}
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(inFile));
+					MixData4UI mixData = (MixData4UI) in.readObject();
+					ConfigPanelManager.bindModeltoUI(mixData);
+					LoginPanelManager.bindModeltoUI(mixData);
+					PassengerPanelManager.bindModeltoUI(mixData);
+					in.close();
+					logger.debug("Loaded UI data from file: {}", filePath);
+				} catch (Exception e) {
+					logger.error("Load UI data from file error", e);
+				}
 			}
 		});
-
-		/****************** 登录控件相关 **********************/
-		LogPanelManager.init(this);
-
-		/****************** 联系人相关 **********************/
-		PassengerPanelManager.init(this);
 
 		/****************** 配置相关 **********************/
 		ConfigPanelManager.init(this);
 
+		/****************** 登录控件相关 **********************/
+		LoginPanelManager.init(this);
+
+		/****************** 联系人相关 **********************/
+		PassengerPanelManager.init(this);
+
+		/****************** 刷票控制面板 **********************/
+		RefreshPanelManager.init(this);
+
 		/****************** 信息输出相关 **********************/
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(15, 460, 640, 145);
-		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBounds(10, 420, 780, 245);
+		scrollPane.setBorder(new TitledBorder("运行记录"));
+		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null,
+				null, null, null));
+		scrollPane
+				.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		getContentPane().add(scrollPane);
 
-		/*consolePane = new JTextArea();
-		scrollPane.setViewportView(consoleArea);
-		DefaultCaret caret = (DefaultCaret) consoleArea.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-		consolePane.setText(ResManager.getText("ticket.textarea.messageOut"));
-		consolePane.setEditable(false);
-		consolePane.setLineWrap(true);*/
-		
+		/*
+		 * consolePane = new JTextArea();
+		 * scrollPane.setViewportView(consoleArea); DefaultCaret caret =
+		 * (DefaultCaret) consoleArea.getCaret();
+		 * caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		 * consolePane.setText
+		 * (ResManager.getText("ticket.textarea.messageOut"));
+		 * consolePane.setEditable(false); consolePane.setLineWrap(true);
+		 */
+
 		consolePane = new ConsolePane();
 		scrollPane.setViewportView(consolePane);
-		consolePane.appendNorm(ResManager.getText("ticket.textarea.messageOut"));
 		consolePane.setEditable(false);
 	}
 
+	private MixData4UI bindUItoModel() {
+		MixData4UI mixData = new MixData4UI();
+		ConfigPanelManager.bindUItoModel(mixData);
+		LoginPanelManager.bindUItoModel(mixData);
+		PassengerPanelManager.bindUItoModel(mixData);
+		return mixData;
+	}
+
 	// 开始按钮onclick事件监听
-	
-	
-    /**
-     * 追加显示主窗口追踪信息
-     * @param message
-     */
-    public static synchronized void trace(String message) {
-        consolePane.appendNorm(message);
-    }
-    
-    public static synchronized void remind(String message) {
-        consolePane.appendRed(message);
-    }
+
+	/**
+	 * 追加显示主窗口追踪信息
+	 * 
+	 * @param message
+	 */
+	public static synchronized void trace(String message) {
+		message = DateUtils.formatDate(new Date(), "HH:mm:ss.SSS ") + message;
+		consolePane.appendNorm(message);
+	}
+
+	public static synchronized void remind(String message) {
+		message = DateUtils.formatDate(new Date(), "HH:mm:ss.SSS ") + message;
+		consolePane.appendRed(message);
+	}
 
 	/**
 	 * 显示警告消息
@@ -202,72 +234,4 @@ public class TicketMainFrame extends JFrame {
 		JOptionPane.showMessageDialog(frame, msg);
 	}
 
-	/**
-	 * 获取乘车人
-	 * 
-	 * @return List<UserInfo>
-	 */
-	/*public List<UserInfo> getUserInfo() {
-		List<UserInfo> list = new ArrayList<UserInfo>();
-		if (StringHelper.isEmptyString(linkman1_cardNo.getText().trim()) || !StringHelper.isEmptyString(linkman1_name.getText().trim())) {
-			if (!StringHelper.isEmptyString(linkman1_mobile.getText().trim())) {
-				UserInfo userInfo1 = new UserInfo(linkman1_cardNo.getText().trim(), linkman1_name.getText().trim(), linkman1_mobile.getText().trim());
-				list.add(userInfo1);
-			} else {
-				UserInfo userInfo1 = new UserInfo(linkman1_cardNo.getText().trim(), linkman1_name.getText().trim());
-				list.add(userInfo1);
-			}
-		}
-		if (!StringHelper.isEmptyString(linkman2_cardNo.getText().trim()) || !StringHelper.isEmptyString(linkman2_name.getText().trim())) {
-			if (!StringHelper.isEmptyString(linkman2_mobile.getText().trim())) {
-				UserInfo userInfo2 = new UserInfo(linkman2_cardNo.getText().trim(), linkman2_name.getText().trim(), linkman2_mobile.getText().trim());
-				list.add(userInfo2);
-			} else {
-				UserInfo userInfo2 = new UserInfo(linkman2_cardNo.getText().trim(), linkman2_name.getText().trim());
-				list.add(userInfo2);
-			}
-		}
-		if (!StringHelper.isEmptyString(linkman3_cardNo.getText().trim()) || !StringHelper.isEmptyString(linkman3_name.getText().trim())) {
-			if (!StringHelper.isEmptyString(linkman3_name.getText().trim())) {
-				UserInfo userInfo3 = new UserInfo(linkman3_cardNo.getText().trim(), linkman3_name.getText().trim(), linkman3_mobile.getText().trim());
-				list.add(userInfo3);
-			} else {
-				UserInfo userInfo3 = new UserInfo(linkman3_cardNo.getText().trim(), linkman3_name.getText().trim());
-				list.add(userInfo3);
-			}
-		}
-		if (!StringHelper.isEmptyString(linkman4_cardNo.getText().trim()) || !StringHelper.isEmptyString(linkman4_name.getText().trim())) {
-			if (!StringHelper.isEmptyString(linkman4_name.getText().trim())) {
-				UserInfo userInfo4 = new UserInfo(linkman4_cardNo.getText().trim(), linkman4_name.getText().trim(), linkman4_mobile.getText().trim());
-				list.add(userInfo4);
-			} else {
-				UserInfo userInfo4 = new UserInfo(linkman4_cardNo.getText().trim(), linkman4_name.getText().trim());
-				list.add(userInfo4);
-			}
-		}
-		if (!StringHelper.isEmptyString(linkman5_cardNo.getText().trim()) || !StringHelper.isEmptyString(linkman5_name.getText().trim())) {
-			if (!StringHelper.isEmptyString(linkman5_name.getText().trim())) {
-				UserInfo userInfo5 = new UserInfo(linkman5_cardNo.getText().trim(), linkman5_name.getText().trim(), linkman5_mobile.getText().trim());
-				list.add(userInfo5);
-			} else {
-				UserInfo userInfo5 = new UserInfo(linkman5_cardNo.getText().trim(), linkman5_name.getText().trim());
-				list.add(userInfo5);
-			}
-		}
-		return list;
-	}*/
-
-	/**
-	 * 获取列车查询
-	 * 
-	 * @return
-	 */
-	/*private TicketSearch getOrderRequest() {
-		req = new TicketSearch();
-		req.setFrom_station_name(formCode.getText().trim());
-		req.setTo_station_name(toCode.getText().trim());
-		req.setTrain_date(txtStartDate.getText().trim());
-		req.setTo_date(DateHelper.getCurDate());
-		return req;
-	}*/
 }

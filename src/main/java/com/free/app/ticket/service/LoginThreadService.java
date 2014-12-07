@@ -2,7 +2,7 @@ package com.free.app.ticket.service;
 
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.util.TicketHttpClient;
-import com.free.app.ticket.view.LogPanelManager;
+import com.free.app.ticket.view.LoginPanelManager;
 
 public class LoginThreadService extends Thread {
     
@@ -27,25 +27,25 @@ public class LoginThreadService extends Thread {
             String result = client.checkLogin(username, password, authcode);
             if (result == null) {
                 TicketMainFrame.trace("登录成功!");
-                LogPanelManager.toggle();
+                LoginPanelManager.toggle();
             }
             else {
                 if ("randCodeError".equals(result)) {//验证码错误时不重新获取验证码
                     result = "验证码不正确！";
                 }
                 if (result.startsWith("密码输入错误")) {
-                    LogPanelManager.requestFocus2Password();
+                    LoginPanelManager.requestFocus2Password();
                 }
                 else if (result.startsWith("登录名不存在")) {
-                    LogPanelManager.requestFocus2Username();
+                    LoginPanelManager.requestFocus2Username();
                 }
                 else if (result.startsWith("验证码")) {
-                    LogPanelManager.requestFocus2Authcode();
+                    LoginPanelManager.requestFocus2Authcode();
                 }
                 TicketMainFrame.alert(result);
                 new HttpClientThreadService().start();//重新获取验证码
             }
         }
-        LogPanelManager.setLoginEnabled();
+        LoginPanelManager.setLoginEnabled();
     }
 }

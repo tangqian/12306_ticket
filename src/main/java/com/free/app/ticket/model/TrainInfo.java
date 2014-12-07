@@ -406,4 +406,12 @@ public class TrainInfo {
 		this.swz_num = swz_num;
 	}
 
+	@Override
+	public String toString() {
+		return "TrainInfo [canWebBuy=" + canWebBuy + ", start_time="
+				+ start_time + ", arrive_time=" + arrive_time + "]";
+	}
+	
+	
+
 }

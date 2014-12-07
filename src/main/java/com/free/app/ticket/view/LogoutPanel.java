@@ -34,9 +34,9 @@ class LogoutPanel extends JPanel {
     public JButton addBtn;
     
     public LogoutPanel(final JFrame frame) {
-        this.setBounds(10, 12, 650, 54);
+        this.setBounds(10, 68, 780, 54);
         this.setLayout(null);
-        this.setBorder(new TitledBorder(ResManager.getText("ticket.panel.userinfo")));
+        this.setBorder(new TitledBorder("第二步：用户登录"));
         
         JLabel label_o = new JLabel(ResManager.getText("ticket.panel.logged"));
         label_o.setFont(new Font("Courier", Font.PLAIN, 14));
@@ -101,7 +101,7 @@ class LogoutPanel extends JPanel {
                             HttpClientThreadService.restart();//点退出时，要重新获取初始sessionid,即重新得到一个httpclient
                         }
                     }).start();
-                    LogPanelManager.toggle();
+                    LoginPanelManager.toggle();
                 }
             }
         });
