@@ -46,14 +46,28 @@ public class HttpHeader {
     }
 
     /**
-     * 通用ajax请求header设置
+     * 通用Post类型ajax请求header设置
      * 
     **/
-    public static void setCommonAjaxHeader(HttpRequestBase http) {
+    public static void setPostAjaxHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
+        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
+        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+    }
+    
+    /**
+     * 通用Get类型ajax请求header设置
+     * 
+    **/
+    public static void setGetAjaxHeader(HttpRequestBase http) {
+        setBaseHeader(http);
+        http.setHeader("Accept", "*/*");
+        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
+        http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
+        http.setHeader("If-Modified-Since", "0");
         http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }

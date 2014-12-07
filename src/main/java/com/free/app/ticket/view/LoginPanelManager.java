@@ -92,6 +92,7 @@ public class LoginPanelManager {
 
 	public static void bindModeltoUI(MixData4UI mixData) {
 		login_panel.username.setText(mixData.getUserName());
+		login_panel.password.requestFocus();
 	}
 
 

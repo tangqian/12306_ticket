@@ -68,7 +68,6 @@ class LogoutPanel extends JPanel {
                 ContacterInfo[] contacters = client.getPassengers();
                 ContacterInfo[] selected = SelContacterDialog.showDialog(frame, contacters);//弹出乘客选择框，并取得被选中乘客
                 PassengerPanelManager.addPassenger(selected);//加入待购票乘客表格中
-                System.out.println("------end--------");
             }
             
         });

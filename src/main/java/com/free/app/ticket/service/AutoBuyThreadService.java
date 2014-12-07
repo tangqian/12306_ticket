@@ -1,5 +1,6 @@
 package com.free.app.ticket.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -8,8 +9,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.TicketBuyInfo;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.JsonMsg4LeftTicket.TrainQueryInfo;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
@@ -35,13 +38,37 @@ public class AutoBuyThreadService extends Thread {
 	public void run() {
 		while (!isSuccess) {
 			TicketHttpClient client = HttpClientThreadService.getHttpClient();
-			List<TrainQueryInfo> trainInfo = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
-			for (TrainQueryInfo trainQueryInfo : trainInfo) {
-				System.out.println(trainQueryInfo);
+			List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
+			if(trainInfos == null)
+				continue;
+			
+			List<TrainInfo> canBuyTrain = new ArrayList<TrainInfo>();
+			List<TrainInfo> notBuyTrain = new ArrayList<TrainInfo>();
+			for (TrainInfo train : trainInfos) {
+				if(train.getCanWebBuy().equals("Y")){
+					canBuyTrain.add(train);
+				}else{
+					notBuyTrain.add(train);
+				}
 			}
+			
+			showNotBuyTrains(notBuyTrain);
+			
 			break;
 		}
 
+	}
+
+	private void showNotBuyTrains(List<TrainInfo> notBuyTrain) {
+		if(notBuyTrain.isEmpty())
+			return;
+		
+		String msg = "";
+		for (TrainInfo trainInfo : notBuyTrain) {
+			msg += trainInfo.getStation_train_code() + ",";
+		}
+		msg = msg.substring(0, msg.length() -1);
+		TicketMainFrame.trace("已售完车次有【" + msg + "】");
 	}
 
 	private Map<String, String> getCookie(TicketConfigInfo config) {

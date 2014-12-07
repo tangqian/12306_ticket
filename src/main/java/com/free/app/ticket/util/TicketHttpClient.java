@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -41,7 +39,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +50,7 @@ import com.free.app.ticket.model.JsonMsg4Contacter;
 import com.free.app.ticket.model.JsonMsg4LeftTicket;
 import com.free.app.ticket.model.JsonMsg4Login;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.JsonMsg4LeftTicket.TrainQueryInfo;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
@@ -211,7 +209,7 @@ public class TicketHttpClient {
 		params.add(new BasicNameValuePair(Constants.RANDCODE_VALIDATE, ""));
 
 		HttpPost post = getHttpPost(UrlConstants.REQ_CHECKCODE_URL, null);
-		HttpHeader.setCommonAjaxHeader(post);
+		HttpHeader.setPostAjaxHeader(post);
 
 		boolean result = false;
 		try {
@@ -232,17 +230,19 @@ public class TicketHttpClient {
 
 	public ContacterInfo[] getPassengers() {
 		HttpPost post = getHttpPost(UrlConstants.REQ_GETPASSENGER_URL, null);
-		HttpHeader.setCommonAjaxHeader(post);
+		HttpHeader.setPostAjaxHeader(post);
 
 		ContacterInfo[] result = null;
 		try {
 			String checkResult = doPostRequest(post, null);
-			logger.info(checkResult);
 			JsonMsg4Contacter msg = JSONObject.parseObject(checkResult,
 					JsonMsg4Contacter.class);
-			System.out.println(msg);
 			if (msg.getStatus()) {
-				result = msg.getData().getNormal_passengers();
+				if( !msg.getData().isExist() && msg.getData().getExMsg() != null){
+					TicketMainFrame.remind(msg.getData().getExMsg());
+				}else{
+					result = msg.getData().getNormal_passengers();
+				}
 			}
 		} catch (Exception e) {
 			logger.error("获取联系人异常", e);
@@ -252,7 +252,7 @@ public class TicketHttpClient {
 		return result;
 	}
 
-	public List<TrainQueryInfo> queryLeftTicket(TicketConfigInfo configInfo,
+	public List<TrainInfo> queryLeftTicket(TicketConfigInfo configInfo,
 			Map<String, String> cookieMap) {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(Constants.TICKETINIT_TRAIN_DATE,
@@ -264,22 +264,31 @@ public class TicketHttpClient {
 		params.add(new BasicNameValuePair(Constants.TICKETINIT_PURPOSE_CODES,
 				configInfo.getPurpose_codes()));
 		String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
+		
 		HttpGet get = getHttpGet(UrlConstants.REQ_TIKETSEARCH_URL + "?"
 				+ paramsUrl, cookieMap);
-		HttpHeader.setCommonAjaxHeader(get);
+		HttpHeader.setGetAjaxHeader(get);
 
-		List<TrainQueryInfo> result = null;
+		List<TrainInfo> result = null;
 		try {
 			String checkResult = doGetRequest(get);
-			logger.info(checkResult);
 			JsonMsg4LeftTicket msg = JSONObject.parseObject(checkResult,
 					JsonMsg4LeftTicket.class);
 			if (msg.getStatus()) {
-				result = msg.getData();
+				List<TrainQueryInfo> infos = msg.getData();
+				if(infos != null){
+					result = new ArrayList<TrainInfo>();
+					TrainInfo trainInfo;
+					for (TrainQueryInfo info : infos) {
+						trainInfo = info.getQueryLeftNewDTO();
+						trainInfo.setSecretStr(info.getSecretStr());
+						result.add(trainInfo);
+					}
+				}
 			}
 		} catch (Exception e) {
 			logger.error("查询余票异常", e);
-			TicketMainFrame.remind("查询余票异常，继续查询");
+			TicketMainFrame.remind("查询余票异常");
 		}
 
 		return result;
@@ -312,7 +321,7 @@ public class TicketHttpClient {
 		params.add(new BasicNameValuePair("myversion", "undefined"));
 
 		HttpPost post = getHttpPost(UrlConstants.REQ_LOGINAYSNSUGGEST_URL, null);
-		HttpHeader.setCommonAjaxHeader(post);
+		HttpHeader.setPostAjaxHeader(post);
 
 		String result = null;
 		try {
@@ -375,7 +384,6 @@ public class TicketHttpClient {
 				request.setEntity(uef);
 				logger.info(URLEncodedUtils.format(params, "UTF-8"));
 			}
-			logger.debug("post request url={}", request.getURI().getRawQuery());
 			HttpResponse response = httpclient.execute(request);
 			Header[] headers = response.getAllHeaders();
 			boolean isGzip = false;
@@ -415,7 +423,7 @@ public class TicketHttpClient {
 		InputStream is = null;
 		try {
 			HttpResponse response = httpclient.execute(request);
-			logger.debug("get request url={}", request.getURI().getRawQuery());
+			logger.debug("get request url={}", request.getURI().toString());
 			Header[] headers = response.getAllHeaders();
 			boolean isGzip = false;
 			for (int i = 0; i < headers.length; i++) {
@@ -433,7 +441,7 @@ public class TicketHttpClient {
 			}
 
 		} catch (Exception e) {
-			logger.error("doPostRequest error:", e);
+			logger.error("doGetRequest error:", e);
 		} finally {
 			if (is != null) {
 				try {
