@@ -115,7 +115,6 @@ public class HttpHeader {
     public static void setInitDcHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
         http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
     }

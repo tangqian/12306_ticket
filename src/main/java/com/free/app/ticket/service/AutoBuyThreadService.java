@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,10 @@ public class AutoBuyThreadService extends Thread {
     private boolean isSuccess = false;
     
     private Map<String, String> cookies;
+    
+    private static final Pattern PATTERN_TOKEN = Pattern.compile("var globalRepeatSubmitToken = '(\\w+)'");
+    
+    private static final Pattern PATTERN_KEY_CHECK = Pattern.compile("'key_check_isChange':'(\\w+)'");
     
     public AutoBuyThreadService(TicketBuyInfo ticketBuyInfo) {
         this.buyInfo = ticketBuyInfo;
@@ -85,45 +91,57 @@ public class AutoBuyThreadService extends Thread {
         Set<String> failTrainSet = new HashSet<String>();//预订失败列车
         for (TrainInfo trainInfo : userPerfers) {
             boolean submitResult = client.submitOrderRequest(buyInfo.getConfigInfo(), cookies, trainInfo);
-            if(!submitResult){
+            if (!submitResult) {
                 failTrainSet.add(trainInfo.getStation_train_code());
-                TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]进入预订页面失败");
+                TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]进入预订页面前检查失败");
+                continue;
+            }
+            OrderToken token = queryOrderToken();
+            if( token == null){
+                failTrainSet.add(trainInfo.getStation_train_code());
+                TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]获取预订页面失败");
                 continue;
             }
             
+            System.out.println(token);
             
         }
-        
         
         return result;
     }
     
-    private OrderToken queryOrderToken(){
+    private OrderToken queryOrderToken() {
         OrderToken token = null;
         
         TicketHttpClient client = HttpClientThreadService.getHttpClient();
         
         int sum = 0;
-        while(token == null && sum < 3){
-            
-            /*try {
-                params = new LinkedHashMap<String, String>();
-                params.put(Constants.COMMON_JSON_ATT, "");
-                String datas = mainWin.client.postRequest(UrlConstants.REQ_INITDC_URL, params, HttpHeader.initDc(), cookies, true);
-                Matcher m_token = getMatcher(Constants.REX_GET_TOKEN, datas);
-                Matcher m_key_check_isChange = getMatcher(Constants.REX_GET_KEY_CHECK_ISCHANGE, datas);
+        while (token == null && sum < 3) {
+            try {
+                String msg = client.getInitDcPage(cookies);
+                String token_str = null;
+                String key_check_isChange_str = null;
+                
+                Matcher m_token = PATTERN_TOKEN.matcher(msg);
+                Matcher m_key_check_isChange = PATTERN_KEY_CHECK.matcher(msg);
                 if (m_token.find()) {
-                    m_token_str = m_token.group(1);
+                    token_str = m_token.group(1);
                 }
                 if (m_key_check_isChange.find()) {
-                    m_key_check_isChange_str = m_key_check_isChange.group(1);
+                    key_check_isChange_str = m_key_check_isChange.group(1);
                 }
-            } catch (Exception e) {
-                logger.error("initDC error : ", e);
-            }*/
+                if (token_str != null && key_check_isChange_str != null) {
+                    token = new OrderToken(token_str, key_check_isChange_str);
+                }
+                else {
+                    logger.error("initDc get token fail for unknow reason, check it!");
+                }
+            }
+            catch (Exception e) {
+                logger.error("initDC page error : ", e);
+            }
             sum++;
         }
-        
         
         return token;
     }
@@ -200,25 +218,31 @@ public class AutoBuyThreadService extends Thread {
         return result;
     }
     
-    class OrderToken{
+    class OrderToken {
         
         private String token;
         
         private String key_check_isChange;
-
+        
         public OrderToken(String token, String keyCheckIsChange) {
             super();
             this.token = token;
             key_check_isChange = keyCheckIsChange;
         }
-
+        
         public String getKey_check_isChange() {
             return key_check_isChange;
         }
-
+        
         public String getToken() {
             return token;
         }
+
+        @Override
+        public String toString() {
+            return "OrderToken [token=" + token + ", key_check_isChange=" + key_check_isChange + "]";
+        }
+        
         
         
     }

@@ -68,6 +68,8 @@ public class TicketHttpClient {
     
     private String BIGipServerotn;
     
+    private static final int DEBBUG_MAX_COUNT = 1000;
+    
     /*
      * private static final String loginAuthCodeFilePath =
      * System.getProperty("user.dir") + File.separator + "login_authcode.jpg";
@@ -514,7 +516,8 @@ public class TicketHttpClient {
         }
         
         if (logger.isDebugEnabled()) {
-            logger.debug("[responseBody] {}", responseBody);
+            if (responseBody.length() < DEBBUG_MAX_COUNT)
+                logger.debug("[responseBody] {}", responseBody);
         }
         return responseBody;
     }
@@ -566,7 +569,8 @@ public class TicketHttpClient {
             httpclient.getConnectionManager().shutdown();
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("[responseBody] {}", responseBody);
+            if (responseBody.length() < DEBBUG_MAX_COUNT)
+                logger.debug("[responseBody] {}", responseBody);
         }
         return responseBody;
     }
