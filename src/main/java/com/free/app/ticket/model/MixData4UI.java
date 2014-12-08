@@ -5,7 +5,6 @@
 package com.free.app.ticket.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +21,7 @@ public class MixData4UI implements Serializable {
 	private String userName;
 
 	// 乘车人数据集合
-	private List<PassengerData> passengerDatas = new ArrayList<PassengerData>();
+	private List<PassengerData> passengerDatas;
 
 	public String getTrainFrom() {
 		return trainFrom;

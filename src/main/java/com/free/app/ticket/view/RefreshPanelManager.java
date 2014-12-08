@@ -52,7 +52,8 @@ public class RefreshPanelManager {
 				public void actionPerformed(ActionEvent arg0) {
 					if (JOptionPane.showConfirmDialog(TicketMainFrame.frame,
 							"确认停止刷票吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-
+					    TicketMainFrame.isStop = true;
+					    startButton.setEnabled(true);
 					}
 				}
 			});
