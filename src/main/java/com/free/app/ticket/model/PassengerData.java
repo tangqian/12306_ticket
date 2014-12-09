@@ -24,6 +24,8 @@ public class PassengerData implements Serializable {
     
     private TicketType ticketType = TicketType.ADULT;
     
+    private SeatType seatType = SeatType.HARD_SEAT;
+    
     public enum TicketType {
         ADULT("成人票", "1"), CHILD("儿童票", "2"), STUDENT("学生票", "3"), SOLDIER("残军票", "4");
         
@@ -107,6 +109,10 @@ public class PassengerData implements Serializable {
         return cardType;
     }
     
+    public String getCardTypeValue() {
+        return cardType.getValue();
+    }
+    
     public void setCardType(CardType cardType) {
         this.cardType = cardType;
     }
@@ -123,6 +129,12 @@ public class PassengerData implements Serializable {
         return mobile;
     }
     
+    public String getMobileNotNull() {
+        if (mobile == null)
+            return "";
+        return mobile;
+    }
+    
     public void setMobile(String mobile) {
         this.mobile = mobile;
     }
@@ -131,8 +143,24 @@ public class PassengerData implements Serializable {
         return ticketType;
     }
     
+    public String getTicketTypeValue() {
+        return ticketType.getValue();
+    }
+    
     public void setTicketType(TicketType ticketType) {
         this.ticketType = ticketType;
+    }
+    
+    public void setSeatType(SeatType seatType) {
+        this.seatType = seatType;
+    }
+    
+    public SeatType getSeatType() {
+        return seatType;
+    }
+    
+    public String getSeatTypeValue() {
+        return seatType.getValue();
     }
     
 }

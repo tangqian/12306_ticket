@@ -19,7 +19,8 @@ import com.free.app.ticket.model.TicketConfigInfo;
 import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
-import com.free.app.ticket.util.constants.Constants;
+import com.free.app.ticket.view.CheckCode4OrderDialog;
+import com.free.app.ticket.view.CheckCode4OrderDialog.CancelType;
 
 public class AutoBuyThreadService extends Thread {
     
@@ -27,7 +28,7 @@ public class AutoBuyThreadService extends Thread {
     
     private TicketBuyInfo buyInfo;
     
-    private boolean isSuccess = false;
+    private boolean isStop = false;
     
     private Map<String, String> cookies;
     
@@ -43,10 +44,10 @@ public class AutoBuyThreadService extends Thread {
     @Override
     public void run() {
         int queryCount = 1;
-        while (!isSuccess && !TicketMainFrame.isStop) {
+        while (!isStop && !TicketMainFrame.isStop) {
             TicketHttpClient client = HttpClientThreadService.getHttpClient();
             TicketMainFrame.trace("");
-            TicketMainFrame.trace("第" + queryCount + "余票查询");
+            TicketMainFrame.trace("第" + queryCount + "次余票查询");
             List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
             queryCount++;
             if (trainInfos == null) {
@@ -77,8 +78,8 @@ public class AutoBuyThreadService extends Thread {
                 continue;
             }
             
-            isSuccess = circularSubmitOrder(userPerfers);
-            isSuccess = true;
+            isStop = circularSubmitOrder(userPerfers);
+            isStop = true;
         }
         
     }
@@ -97,14 +98,26 @@ public class AutoBuyThreadService extends Thread {
                 continue;
             }
             OrderToken token = queryOrderToken();
-            if( token == null){
+            if (token == null) {
                 failTrainSet.add(trainInfo.getStation_train_code());
                 TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]获取预订页面失败");
                 continue;
             }
             
-            System.out.println(token);
-            
+            TicketMainFrame.trace("车次[" + trainInfo.getStation_train_code() + "]进入订单提交确认页");
+            CancelType cancelType = CheckCode4OrderDialog.showDialog(TicketMainFrame.frame, buyInfo, token, cookies);
+            if (cancelType == CancelType.ALLAFTER) {
+                isStop = true;
+                TicketMainFrame.remind("您取消了全部列车的预订");
+                break;
+            }
+            else if (cancelType == CancelType.ONLYTHIS || cancelType == CancelType.DEFAULT) {//取消预订当前
+                TicketMainFrame.remind("您取消了当前车次[" + trainInfo.getStation_train_code() + "]的预订");
+                continue;
+            }
+            else if (cancelType == CancelType.SUCCESS) {
+                new TrianQueueThreadService(trainInfo, token, cookies).start();
+            }
         }
         
         return result;
@@ -195,11 +208,11 @@ public class AutoBuyThreadService extends Thread {
     
     private Map<String, String> getCookie(TicketConfigInfo config) {
         Map<String, String> cookies = new HashMap<String, String>();
-        cookies.put(Constants._jc_save_fromStation, getUnicode4Cookie(config.getFrom_station_name(), config.getFrom_station()));
-        cookies.put(Constants._jc_save_toStation, getUnicode4Cookie(config.getTo_station_name(), config.getTo_station()));
-        cookies.put(Constants._jc_save_fromDate, config.getTrain_date());
-        cookies.put(Constants._jc_save_toDate, DateUtils.formatDate(new Date()));
-        cookies.put(Constants._jc_save_wfdc_flag, "dc");
+        cookies.put("_jc_save_fromStation", getUnicode4Cookie(config.getFrom_station_name(), config.getFrom_station()));
+        cookies.put("_jc_save_toStation", getUnicode4Cookie(config.getTo_station_name(), config.getTo_station()));
+        cookies.put("_jc_save_fromDate", config.getTrain_date());
+        cookies.put("_jc_save_toDate", DateUtils.formatDate(new Date()));
+        cookies.put("_jc_save_wfdc_flag", "dc");
         return cookies;
     }
     
@@ -218,7 +231,7 @@ public class AutoBuyThreadService extends Thread {
         return result;
     }
     
-    class OrderToken {
+    public class OrderToken {
         
         private String token;
         
@@ -237,13 +250,11 @@ public class AutoBuyThreadService extends Thread {
         public String getToken() {
             return token;
         }
-
+        
         @Override
         public String toString() {
             return "OrderToken [token=" + token + ", key_check_isChange=" + key_check_isChange + "]";
         }
-        
-        
         
     }
 }

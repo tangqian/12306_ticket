@@ -45,33 +45,33 @@ class LoginPanel extends JPanel {
     public LoginPanel() {
         //this.setBounds(10, 12, 650, 54);
         this.setBounds(10, 68, 780, 54);
-        this.setLayout(new FlowLayout());
+        this.setLayout(null);
         this.setBorder(new TitledBorder("第二步：用户登录"));
         
         JLabel label_o = new JLabel(ResManager.getText("ticket.label.user_name"));
-        label_o.setBounds(10, 26, 40, 15);
+        label_o.setBounds(110, 23, 40, 15);
         this.add(label_o);
         label_o.setHorizontalAlignment(SwingConstants.RIGHT);
         
         username = new JTextField();
         username.setName("username");
-        username.setBounds(60, 23, 100, 21);
+        username.setBounds(155, 20, 100, 21);
         this.add(username);
         username.setColumns(20);
         
         JLabel label_o1 = new JLabel(ResManager.getText("ticket.label.password"));
-        label_o1.setBounds(170, 26, 40, 15);
+        label_o1.setBounds(255, 23, 35, 15);
         this.add(label_o1);
         label_o1.setHorizontalAlignment(SwingConstants.RIGHT);
         
         password = new JPasswordField();
         password.setName("password");
-        password.setBounds(220, 23, 100, 21);
+        password.setBounds(295, 20, 100, 21);
         this.add(password);
         password.setColumns(20);
         
         code = new JLabel();
-        code.setBounds(341, 18, 78, 28);
+        code.setBounds(410, 18, 78, 28);
         code.setToolTipText("点我刷新验证码！");
         code.setIcon(ResManager.createImageIcon("nocode.jpg"));
         this.add(code);
@@ -85,12 +85,12 @@ class LoginPanel extends JPanel {
         
         authcode = new AuthCodeTextField();
         authcode.setToolTipText(ResManager.getText("ticket.label.code.tipinfo"));
-        authcode.setBounds(440, 23, 40, 21);
+        authcode.setBounds(490, 20, 40, 21);
         this.add(authcode);
         authcode.setColumns(7);
         
         loginBtn = new LoginBtn(ResManager.getText("ticket.btn.login"));
-        loginBtn.setBounds(560, 18, 65, 28);
+        loginBtn.setBounds(560, 16, 65, 28);
         this.add(loginBtn);
     }
     

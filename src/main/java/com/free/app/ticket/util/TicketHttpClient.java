@@ -49,13 +49,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.ContacterInfo;
 import com.free.app.ticket.model.JsonMsg4Authcode;
+import com.free.app.ticket.model.JsonMsg4CheckOrder;
 import com.free.app.ticket.model.JsonMsg4Contacter;
 import com.free.app.ticket.model.JsonMsg4LeftTicket;
 import com.free.app.ticket.model.JsonMsg4Login;
+import com.free.app.ticket.model.JsonMsg4QueueCount;
 import com.free.app.ticket.model.JsonMsgSuper;
+import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.model.TicketConfigInfo;
 import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.JsonMsg4LeftTicket.TrainQueryInfo;
+import com.free.app.ticket.model.PassengerData.SeatType;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
 import com.free.app.ticket.util.constants.UrlConstants;
@@ -209,6 +213,54 @@ public class TicketHttpClient {
         return file;
     }
     
+    public File buildOrderCodeImage(Map<String, String> cookies) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax get 获取提交订单验证码---");
+        }
+        HttpClient httpclient = buildHttpClient();
+        HttpGet get = getHttpGet(UrlConstants.REQ_GETSUBPASSCODE_URL, cookies);
+        HttpHeader.setLoginAuthCodeHeader(get);
+        
+        File file = new File(System.getProperty("java.io.tmpdir") + File.separator + JSESSIONID + ".order.jpg");
+        OutputStream out = null;
+        InputStream is = null;
+        try {
+            HttpResponse response = httpclient.execute(get);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                is = entity.getContent();
+                out = new FileOutputStream(file);
+                int readByteCount = -1;
+                byte[] buffer = new byte[256];
+                while ((readByteCount = is.read(buffer)) != -1) {
+                    out.write(buffer, 0, readByteCount);
+                }
+            }
+        }
+        catch (Exception e) {
+            file = null;
+            logger.error("buildOrderCodeImage error : ", e);
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                }
+                catch (IOException e) {
+                }
+            }
+            httpclient.getConnectionManager().shutdown();
+        }
+        return file;
+    }
+    
     public boolean checkLoginAuthcode(String authCode) {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 检查验证码---");
@@ -232,6 +284,71 @@ public class TicketHttpClient {
         catch (Exception e) {
             logger.error("验证码检查发生异常", e);
             TicketMainFrame.remind("验证码检查发生异常,请联系管理员");
+        }
+        
+        return result;
+    }
+    
+    public JsonMsg4QueueCount getQueueCount(TrainInfo train, String token, Map<String, String> cookieMap) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 获取排队人数---");
+        }
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("purpose_codes", "00"));
+        params.add(new BasicNameValuePair("seatType", "1"));
+        params.add(new BasicNameValuePair("train_no", train.getTrain_no()));
+        params.add(new BasicNameValuePair("fromStationTelecode", train.getFrom_station_telecode()));
+        params.add(new BasicNameValuePair("stationTrainCode", train.getStation_train_code()));
+        params.add(new BasicNameValuePair("toStationTelecode", train.getTo_station_telecode()));
+        params.add(new BasicNameValuePair("leftTicket", train.getYp_info()));
+        params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
+        params.add(new BasicNameValuePair("train_date", "Sun Jan 12 00:00:00 UTC+0800 2014"));
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
+        HttpPost post = getHttpPost(UrlConstants.REQ_QUEUECOUNT_URL, cookieMap);
+        HttpHeader.setPostAjaxHeader(post);
+        
+        JsonMsg4QueueCount result = null;
+        try {
+            String checkResult = doPostRequest(post, params);
+            result = JSONObject.parseObject(checkResult, JsonMsg4QueueCount.class);
+        }
+        catch (Exception e) {
+            logger.error("获取排队人数发生异常", e);
+            TicketMainFrame.remind("获取排队人数发生异常");
+        }
+        return result;
+    }
+    
+    public boolean checkOrderAuthcode(String authCode, String token, List<PassengerData> passengers,
+        Map<String, String> cookieMap) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 检查下单验证码---");
+        }
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("bed_level_order_num", "000000000000000000000000000000"));
+        params.add(new BasicNameValuePair("cancel_flag", "2"));
+        params.add(new BasicNameValuePair("passengerTicketStr", getPassengerTicketStr(passengers)));
+        params.add(new BasicNameValuePair("oldPassengerStr", getOldPassengerStr(passengers)));
+        params.add(new BasicNameValuePair("randCode", authCode));
+        params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
+        params.add(new BasicNameValuePair("tour_flag", "dc"));
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
+        HttpPost post = getHttpPost(UrlConstants.REQ_CHECKORDER_URL, cookieMap);
+        HttpHeader.setPostAjaxHeader(post);
+        
+        boolean result = false;
+        try {
+            String checkResult = doPostRequest(post, params);
+            JsonMsg4CheckOrder msg = JSONObject.parseObject(checkResult, JsonMsg4CheckOrder.class);
+            if (msg.getHttpstatus() == 200 && msg.getStatus() && msg.getData().getBooleanValue("submitStatus")) {
+                result = true;
+            }
+        }
+        catch (Exception e) {
+            logger.error("检查下单验证码发生异常", e);
+            TicketMainFrame.remind("检查下单验证码发生异常,请联系管理员");
         }
         
         return result;
@@ -430,7 +547,7 @@ public class TicketHttpClient {
         catch (Exception e) {
             result = "登录异常!";
             logger.error("登录发生异常", e);
-            TicketMainFrame.remind("登录发生异常,请联系管理员");
+            TicketMainFrame.remind("登录发生异常");
         }
         
         return result;
@@ -480,8 +597,10 @@ public class TicketHttpClient {
             if (logger.isDebugEnabled()) {
                 if (params == null)
                     logger.debug("[post params] null");
-                else
-                    logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));
+                else {
+                    if (!URLEncodedUtils.format(params, "UTF-8").contains("password"))//不打印密码参数
+                        logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));
+                }
             }
             HttpResponse response = httpclient.execute(request);
             Header[] headers = response.getAllHeaders();
@@ -608,6 +727,55 @@ public class TicketHttpClient {
         else {
             request.addHeader("Cookie", "JSESSIONID=" + JSESSIONID + ";BIGipServerotn=" + BIGipServerotn);
         }
+    }
+    
+    /**
+     * 获取参数oldPassengerStr值
+     * 
+     * @param passengers
+     * @return
+     */
+    private String getOldPassengerStr(List<PassengerData> passengers) {
+        StringBuilder sb = new StringBuilder();
+        for (PassengerData p : passengers) {
+            sb.append(p.getName())
+                .append(',')
+                .append(p.getCardTypeValue())
+                .append(",")
+                .append(p.getCardNo())
+                .append(',')
+                .append(p.getTicketTypeValue())
+                .append('_');
+        }
+        return sb.toString();
+    }
+    
+    /**
+     * 获取oldPassengerStr
+     * 
+     * @param userInfo
+     * @return
+     */
+    private String getPassengerTicketStr(List<PassengerData> passengers) {
+        StringBuilder sb = new StringBuilder();
+        for (PassengerData p : passengers) {
+            if (p.getSeatType() != SeatType.NONE_SEAT) {
+                sb.append(p.getSeatTypeValue());
+            }
+            sb.append(",0,")
+                .append(p.getTicketTypeValue())
+                .append(',')
+                .append(p.getName())
+                .append(',')
+                .append(p.getCardTypeValue())
+                .append(",")
+                .append(p.getCardNo())
+                .append(',')
+                .append(p.getMobileNotNull())
+                .append(",N_");
+        }
+        
+        return sb.substring(0, sb.length() - 1);
     }
     
     /**

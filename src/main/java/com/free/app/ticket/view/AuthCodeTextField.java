@@ -24,7 +24,6 @@ public class AuthCodeTextField extends JTextField {
     }
     
     public AuthCodeTextField() {
-        this.getText();
         this.getDocument().addDocumentListener(new DocumentListener() {
             
             @Override
