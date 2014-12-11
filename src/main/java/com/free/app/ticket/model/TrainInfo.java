@@ -1,5 +1,7 @@
 package com.free.app.ticket.model;
 
+import com.free.app.ticket.model.PassengerData.SeatType;
+
 /**
  * 
  * 火车信息实体类
@@ -449,38 +451,39 @@ public class TrainInfo {
     
     public String getLeftTicketInfo() {
         StringBuilder sb = new StringBuilder();
+        
         if (!isSellOut(gr_num)) {
-            sb.append(JsonSeatTypeEnum.GR.getLabel()).append("(").append(gr_num).append("),");
+            sb.append(SeatType.VAG_SLEEPER.getLabel()).append("(").append(gr_num).append("),");
         }
         if (!isSellOut(rw_num)) {
-            sb.append(JsonSeatTypeEnum.RW.getLabel()).append("(").append(rw_num).append("),");
+            sb.append(SeatType.SOFT_SLEEPER.getLabel()).append("(").append(rw_num).append("),");
         }
         if (!isSellOut(yw_num)) {
-            sb.append(JsonSeatTypeEnum.YW.getLabel()).append("(").append(yw_num).append("),");
+            sb.append(SeatType.HARD_SLEEPER.getLabel()).append("(").append(yw_num).append("),");
         }
         if (!isSellOut(rz_num)) {
-            sb.append(JsonSeatTypeEnum.RZ.getLabel()).append("(").append(rz_num).append("),");
+            sb.append(SeatType.SOFT_SEAT.getLabel()).append("(").append(rz_num).append("),");
         }
         if (!isSellOut(yz_num)) {
-            sb.append(JsonSeatTypeEnum.YZ.getLabel()).append("(").append(yz_num).append("),");
+            sb.append(SeatType.HARD_SEAT.getLabel()).append("(").append(yz_num).append("),");
         }
         if (!isSellOut(wz_num)) {
-            sb.append(JsonSeatTypeEnum.WZ.getLabel()).append("(").append(wz_num).append("),");
+            sb.append(SeatType.NONE_SEAT.getLabel()).append("(").append(wz_num).append("),");
         }
         if (!isSellOut(swz_num)) {
-            sb.append(JsonSeatTypeEnum.SWZ.getLabel()).append("(").append(swz_num).append("),");
+            sb.append(SeatType.BUSS_SEAT.getLabel()).append("(").append(swz_num).append("),");
         }
         if (!isSellOut(tz_num)) {
-            sb.append(JsonSeatTypeEnum.TZ.getLabel()).append("(").append(tz_num).append("),");
+            sb.append(SeatType.BEST_SEAT.getLabel()).append("(").append(tz_num).append("),");
         }
         if (!isSellOut(zy_num)) {
-            sb.append(JsonSeatTypeEnum.ZY.getLabel()).append("(").append(zy_num).append("),");
+            sb.append(SeatType.ONE_SEAT.getLabel()).append("(").append(zy_num).append("),");
         }
         if (!isSellOut(ze_num)) {
-            sb.append(JsonSeatTypeEnum.ZE.getLabel()).append("(").append(ze_num).append("),");
+            sb.append(SeatType.TWO_SEAT.getLabel()).append("(").append(ze_num).append("),");
         }
         if (!isSellOut(qt_num)) {
-            sb.append(JsonSeatTypeEnum.QT.getLabel()).append("(").append(qt_num).append("),");
+            sb.append(SeatType.OTH_SEAT.getLabel()).append("(").append(qt_num).append("),");
         }
         
         String result;

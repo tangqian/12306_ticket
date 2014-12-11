@@ -7,6 +7,8 @@ public class TicketBuyInfo {
 	private TicketConfigInfo configInfo;
 
 	private List<PassengerData> passengers;
+	
+	private String currentBuySeat;
 
 	public TicketBuyInfo(TicketConfigInfo configInfo, List<PassengerData> passengers) {
 		super();
@@ -21,6 +23,15 @@ public class TicketBuyInfo {
 	public TicketConfigInfo getConfigInfo() {
 		return configInfo;
 	}
+
+    public void setCurrentBuySeat(String currentBuySeat) {
+        this.currentBuySeat = currentBuySeat;
+    }
+
+    public String getCurrentBuySeat() {
+        return currentBuySeat;
+    }
+
 	
 	
 }

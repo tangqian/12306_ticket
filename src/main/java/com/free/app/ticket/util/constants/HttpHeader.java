@@ -31,18 +31,17 @@ public class HttpHeader {
         http.setHeader("Connection", "keep-alive");
         http.setHeader("Host", "kyfw.12306.cn");
         http.setHeader("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)");
+        http.setHeader("Referer", "https://kyfw.12306.cn/");
     }
     
     public static void setLoginInitHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader("Referer", UrlConstants.REF_WEBSITEROOT_URL);
     }
     
     public static void setLoginAuthCodeHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
-        http.setHeader("Referer", UrlConstants.REF_WEBSITEROOT_URL);
     }
 
     /**
@@ -54,7 +53,6 @@ public class HttpHeader {
         http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
     
@@ -68,7 +66,6 @@ public class HttpHeader {
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
         http.setHeader("If-Modified-Since", "0");
-        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
     
@@ -83,7 +80,6 @@ public class HttpHeader {
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_WEBSITEROOT_URL);
     }
     
     public static void setTiketInitHeader(HttpRequestBase http) {
@@ -91,7 +87,6 @@ public class HttpHeader {
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
     }
     
     public static void setTiketSearchHeader(HttpRequestBase http) {
@@ -99,7 +94,6 @@ public class HttpHeader {
         http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader("If-Modified-Since", "0");
-        http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
     
@@ -108,7 +102,6 @@ public class HttpHeader {
         http.setHeader("Accept", "*/*");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
     
@@ -116,7 +109,6 @@ public class HttpHeader {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
         http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
-        http.setHeader(REFERER, UrlConstants.REF_TICKET_URL);
     }
     
     /**
@@ -128,7 +120,6 @@ public class HttpHeader {
         http.setHeader("Accept", "application/json, text/javascript, */*; q=0.01");
         http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
         http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(REFERER, UrlConstants.REQ_INITDC_URL);
         http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
     }
 }

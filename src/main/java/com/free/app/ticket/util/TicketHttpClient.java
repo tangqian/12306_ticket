@@ -66,7 +66,6 @@ import com.free.app.ticket.model.PassengerData.SeatType;
 import com.free.app.ticket.service.AutoBuyThreadService.OrderToken;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
-import com.free.app.ticket.util.constants.UrlConstants;
 
 public class TicketHttpClient {
     
@@ -97,7 +96,7 @@ public class TicketHttpClient {
     public static TicketHttpClient getInstance() {
         TicketHttpClient instacne = null;
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = new HttpGet(UrlConstants.REQ_LOGININIT_URL);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/login/init");
         HttpHeader.setLoginInitHeader(get);
         
         String JSESSIONID = null;
@@ -110,10 +109,10 @@ public class TicketHttpClient {
                     String cookie[] = headers[i].getValue().split("=");
                     String cookieName = cookie[0];
                     String cookieValue = cookie[1].split(";")[0];
-                    if (cookieName.equals(Constants.JSESSIONID)) {
+                    if (cookieName.equals("JSESSIONID")) {
                         JSESSIONID = cookieValue;
                     }
-                    if (cookieName.equals(Constants.BIGIPSERVEROTN)) {
+                    if (cookieName.equals("BIGipServerotn")) {
                         BIGipServerotn = cookieValue;
                     }
                 }
@@ -174,7 +173,7 @@ public class TicketHttpClient {
     
     public File buildLoginCodeImage() {
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = getHttpGet(UrlConstants.REQ_GETLOGINPASSCODE_URL, null);
+        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=login&rand=sjrand", null);
         HttpHeader.setLoginAuthCodeHeader(get);
         
         File file = new File(System.getProperty("java.io.tmpdir") + File.separator + JSESSIONID + ".login.jpg");
@@ -222,7 +221,7 @@ public class TicketHttpClient {
             logger.debug("---ajax get 获取提交订单验证码---");
         }
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = getHttpGet(UrlConstants.REQ_GETSUBPASSCODE_URL, cookies);
+        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp", cookies);
         HttpHeader.setLoginAuthCodeHeader(get);
         
         File file = new File(System.getProperty("java.io.tmpdir") + File.separator + JSESSIONID + ".order.jpg");
@@ -274,7 +273,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair(Constants.CHECKCODE_PARAMS_RAND, "sjrand"));
         params.add(new BasicNameValuePair(Constants.RANDCODE_VALIDATE, ""));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_CHECKCODE_URL, null);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn", null);
         HttpHeader.setPostAjaxHeader(post);
         
         boolean result = false;
@@ -293,13 +292,13 @@ public class TicketHttpClient {
         return result;
     }
     
-    public JsonMsg4QueueCount getQueueCount(TrainInfo train, String token, Map<String, String> cookieMap) {
+    public JsonMsg4QueueCount getQueueCount(TrainInfo train, String seatType, String token, Map<String, String> cookieMap) {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 获取排队人数---");
         }
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("purpose_codes", "00"));
-        params.add(new BasicNameValuePair("seatType", "1"));
+        params.add(new BasicNameValuePair("seatType", seatType));
         params.add(new BasicNameValuePair("train_no", train.getTrain_no()));
         params.add(new BasicNameValuePair("fromStationTelecode", train.getFrom_station_telecode()));
         params.add(new BasicNameValuePair("stationTrainCode", train.getStation_train_code()));
@@ -309,7 +308,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_date", "Sun Jan 12 00:00:00 UTC+0800 2014"));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_QUEUECOUNT_URL, cookieMap);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount", cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
         JsonMsg4QueueCount result = null;
@@ -351,7 +350,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_location", train.getLocation_code()));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_CONFIRMSINGLE_URL, cookieMap);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue", cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
         JsonMsg4ConfirmQueue result = null;
@@ -394,7 +393,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
         String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
         
-        HttpGet get = getHttpGet(UrlConstants.REQ_QUERYORDERWAIT_URL + "?" + paramsUrl, cookieMap);
+        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime" + "?" + paramsUrl, cookieMap);
         HttpHeader.setGetAjaxHeader(get);
         
         JsonMsg4QueryWait result = null;
@@ -424,7 +423,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("tour_flag", "dc"));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_CHECKORDER_URL, cookieMap);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo", cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
         JsonMsg4CheckOrder result = null;
@@ -455,7 +454,7 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 获取联系人---");
         }
-        HttpPost post = getHttpPost(UrlConstants.REQ_GETPASSENGER_URL, null);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs", null);
         HttpHeader.setPostAjaxHeader(post);
         
         ContacterInfo[] result = null;
@@ -496,7 +495,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair(Constants.TICKETINIT_PURPOSE_CODES, configInfo.getPurpose_codes()));
         String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
         
-        HttpGet get = getHttpGet(UrlConstants.REQ_TIKETSEARCH_URL + "?" + paramsUrl, cookieMap);
+        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/leftTicket/query" + "?" + paramsUrl, cookieMap);
         HttpHeader.setGetAjaxHeader(get);
         
         List<TrainInfo> result = null;
@@ -552,7 +551,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("query_from_station_name", configInfo.getFrom_station_name()));
         params.add(new BasicNameValuePair("query_to_station_name", configInfo.getTo_station_name()));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_SUBMITORDER_URL, cookieMap);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest", cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
         String result = null;
@@ -604,7 +603,7 @@ public class TicketHttpClient {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_INITDC_URL, cookieMap);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/initDc", cookieMap);
         HttpHeader.setInitDcHeader(post);
         
         String result = null;
@@ -644,7 +643,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("NDM1OTA5", "MGE4MTI4ZGJkODM4YjEwYQ=="));
         params.add(new BasicNameValuePair("myversion", "undefined"));
         
-        HttpPost post = getHttpPost(UrlConstants.REQ_LOGINAYSNSUGGEST_URL, null);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest", null);
         HttpHeader.setPostAjaxHeader(post);
         
         String result = null;
@@ -673,7 +672,7 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---post 登录退出---");
         }
-        HttpPost post = getHttpPost(UrlConstants.REQ_LOGOUT_URL, null);
+        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginOut", null);
         HttpHeader.setLogoutHeader(post);
         
         try {

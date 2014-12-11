@@ -1,7 +1,6 @@
 package com.free.app.ticket.view;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -21,7 +20,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.TicketBuyInfo;
+import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.service.CheckOrderAuthcodeThreadService;
 import com.free.app.ticket.service.OrderAuthCodeThreadService;
 import com.free.app.ticket.service.AutoBuyThreadService.OrderToken;
@@ -43,25 +44,27 @@ public class CheckCode4OrderDialog extends JDialog {
     
     private Map<String, String> cookies;
     
-    private DialogResult callbackResult = new DialogResult(ChooseType.DEFAULT, null);;
+    private DialogResult callbackResult = new DialogResult(ChooseType.DEFAULT, null);
     
-    private CheckCode4OrderDialog(TicketBuyInfo buyInfo, OrderToken token, Map<String, String> cookies) {
+    private CheckCode4OrderDialog(TrainInfo trainInfo, TicketBuyInfo buyInfo, OrderToken token,
+        Map<String, String> cookies) {
         super();
         this.buyInfo = buyInfo;
         this.token = token;
         this.cookies = cookies;
-        init();
+        
+        init(trainInfo);
         setModal(true);
         setResizable(false);
         setTitle("请输入验证码");
-        setSize(200, 150);
+        setSize(300, 200);
         setLocation(300, 100);
     }
     
-    public static DialogResult showDialog(Component relativeTo, TicketBuyInfo buyInfo, OrderToken token,
+    public static DialogResult showDialog(TrainInfo trainInfo, TicketBuyInfo buyInfo, OrderToken token,
         Map<String, String> cookies) {
-        CheckCode4OrderDialog d = new CheckCode4OrderDialog(buyInfo, token, cookies);
-        d.setLocationRelativeTo(relativeTo);
+        CheckCode4OrderDialog d = new CheckCode4OrderDialog(trainInfo, buyInfo, token, cookies);
+        d.setLocationRelativeTo(TicketMainFrame.frame);
         d.setVisible(true);
         return d.callbackResult;
     }
@@ -75,15 +78,22 @@ public class CheckCode4OrderDialog extends JDialog {
         code.setIcon(icon);
     }
     
-    private void init() {
+    private void init(TrainInfo train) {
         Container c = getContentPane();
         c.setLayout(new BorderLayout());
         
         JPanel contacterPanel = new JPanel();
         contacterPanel.setLayout(null);
         
+        String showText =
+            "正在为你购买车次【" + train.getStation_train_code() + "】，席别为" + buyInfo.getCurrentBuySeat()
+                + "，请尽快输入验证码，如想更换车次，请点击下面的取消按钮";
+        JLabel show = new JLabel(showText);
+        show.setBounds(10, 5, 280, 50);
+        contacterPanel.add(show);
+        
         code = new JLabel();
-        code.setBounds(22, 21, 78, 28);
+        code.setBounds(72, 61, 78, 28);
         code.setToolTipText("点我刷新验证码！");
         code.setIcon(ResManager.createImageIcon("nocode.jpg"));
         contacterPanel.add(code);
@@ -97,7 +107,7 @@ public class CheckCode4OrderDialog extends JDialog {
         
         AuthCodeTextField4Order authcode = new AuthCodeTextField4Order();
         authcode.setToolTipText(ResManager.getText("ticket.label.code.tipinfo"));
-        authcode.setBounds(110, 21, 40, 21);
+        authcode.setBounds(160, 61, 40, 21);
         contacterPanel.add(authcode);
         authcode.setColumns(10);
         
@@ -109,6 +119,7 @@ public class CheckCode4OrderDialog extends JDialog {
         operatePanel.setLayout(fl);
         
         JButton cancelAllButton = new JButton("取消全部");
+        cancelAllButton.setToolTipText("取消全部车次的购买");
         cancelAllButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,6 +129,7 @@ public class CheckCode4OrderDialog extends JDialog {
         });
         
         JButton cancelCurButton = new JButton("取消当前");
+        cancelCurButton.setToolTipText("取消当前车次的购买");
         cancelCurButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

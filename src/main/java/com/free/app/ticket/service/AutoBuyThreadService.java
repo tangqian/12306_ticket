@@ -14,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.free.app.ticket.TicketMainFrame;
+import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.model.TicketBuyInfo;
 import com.free.app.ticket.model.TicketConfigInfo;
 import com.free.app.ticket.model.TrainInfo;
+import com.free.app.ticket.model.PassengerData.SeatType;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
 import com.free.app.ticket.view.CheckCode4OrderDialog;
@@ -122,11 +124,18 @@ public class AutoBuyThreadService extends Thread {
         
         Set<String> failTrainSet = new HashSet<String>();//预订失败列车
         for (TrainInfo trainInfo : userPerfers) {
+            String updateRet = updateTicket(trainInfo);//根据列车余票信息，确定用户所坐席位
+            if(updateRet != null){
+                TicketMainFrame.remind(updateRet);
+                continue;
+            }
+            
             String submitResult = client.submitOrderRequest(buyInfo.getConfigInfo(), cookies, trainInfo);
             if (submitResult != null) {
                 failTrainSet.add(trainInfo.getStation_train_code());
                 TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]进入预订页面前检查失败");
                 if(submitResult.contains("未完成订单")){
+                    TicketMainFrame.remind("恭喜您已经成功预订到列车，可以回家了，哦耶!(友情提示，请尽快登录12306进行支付)");
                     break;
                 }else{
                     continue;
@@ -140,7 +149,7 @@ public class AutoBuyThreadService extends Thread {
             }
             
             TicketMainFrame.trace("车次[" + trainInfo.getStation_train_code() + "]进入订单提交确认页");
-            DialogResult checkResult = CheckCode4OrderDialog.showDialog(TicketMainFrame.frame, buyInfo, token, cookies);
+            DialogResult checkResult = CheckCode4OrderDialog.showDialog(trainInfo, buyInfo, token, cookies);
             ChooseType chooseType = checkResult.getChooseType();
             if (chooseType == ChooseType.CANCELALL) {
                 TicketMainFrame.remind("您取消了全部列车的预订");
@@ -162,15 +171,39 @@ public class AutoBuyThreadService extends Thread {
                     }
                     waitFlag = true;
                 }
-                
-                
-                
             }
         }
         
         return result;
     }
     
+    /**
+     * 根据当前车次的余票更新乘客所买席位信息
+     * @param train
+     * @return
+     */
+    private String updateTicket(TrainInfo train) {
+        String updateResult = null;
+        
+        SeatType seatType = null;
+        if(!train.isSellOut(train.getZe_num())){//二等座
+            seatType = SeatType.TWO_SEAT;
+        }else if(!train.isSellOut(train.getYz_num())){//硬座
+            seatType = SeatType.HARD_SEAT;
+        }
+        
+        if(seatType != null){
+            List<PassengerData> pass = buyInfo.getPassengers();
+            for (PassengerData passengerData : pass) {
+                passengerData.setSeatType(seatType);
+            }
+            buyInfo.setCurrentBuySeat(seatType.getLabel());
+        }else{
+            updateResult = "车次[" + train.getStation_train_code() + "]没有你想要的席位，将选择下一趟列车";
+        }
+        return updateResult;
+    }
+
     private OrderToken queryOrderToken() {
         OrderToken token = null;
         

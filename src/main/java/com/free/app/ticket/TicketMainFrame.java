@@ -13,11 +13,9 @@ import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -214,11 +212,13 @@ public class TicketMainFrame extends JFrame {
      */
     public static synchronized void trace(String message) {
         message = DateUtils.formatDate(new Date(), "HH:mm:ss.SSS ") + message;
+        logger.info(message);
         consolePane.appendNorm(message);
     }
     
     public static synchronized void remind(String message) {
         message = DateUtils.formatDate(new Date(), "HH:mm:ss.SSS ") + message;
+        logger.error(message);
         consolePane.appendRed(message);
     }
     

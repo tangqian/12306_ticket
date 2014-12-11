@@ -33,9 +33,12 @@ public class CheckOrderAuthcodeThreadService extends Thread {
                 String errMsg = msg.getData().getString("errMsg");
                 if(errMsg == null)
                     errMsg = "未知错误";
-                TicketMainFrame.remind(errMsg);
-                dialog.dispose();
-                
+                if(errMsg.equals("randCodeError") || errMsg.contains("验证码")){
+                    TicketMainFrame.remind("订单验证码输入错误!");
+                }else{
+                    TicketMainFrame.remind(errMsg);
+                    dialog.dispose();
+                }
             }
         }else{
             TicketMainFrame.remind("订单验证码输入错误!");
