@@ -62,12 +62,6 @@ public class TicketMainFrame extends JFrame {
     
     public JCheckBox hardSleePer;
     
-    private JFormattedTextField txtStartDate;
-    
-    private JTextField formCode;
-    
-    private JTextField toCode;
-    
     public JButton startButton;
     
     /************* 输出相关 ****************/
@@ -85,23 +79,6 @@ public class TicketMainFrame extends JFrame {
     public static boolean isStop = false;
     
     /************** 业务逻辑相关的变量 ****************/
-    /*
-     * // 存放用户信息 public List<UserInfo> userInfoList = null; // 存放查询火车实体 private
-     * TicketSearch req; // 项目根路径 public static String path; // 类本身 public
-     * TicketMainFrame mainWin = this; // 登录验证码路径 public String loginUrl; //
-     * 提交订单验证码路径 public String submitUrl; // 是否登录成功 public boolean isLogin =
-     * false; // 线程是否运行 public boolean isRunThread = false; // 是否点击了停止按钮 public
-     * boolean isStopRun = false;
-     */
-    /*
-     * // client public ClientCore client = new ClientCore();
-     */
-
-    // 静态构造块
-    /*
-     * static { // 获取当前jar包的目录 path = System.getProperty("user.dir") +
-     * File.separator; logger.debug("mainWin path = " + path); }
-     */
 
     public static void main(String[] arg0) {
         EventQueue.invokeLater(new Runnable() {

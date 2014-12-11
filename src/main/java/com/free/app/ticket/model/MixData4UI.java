@@ -19,6 +19,16 @@ public class MixData4UI implements Serializable {
 	private String trainTo;
 	
 	private String userName;
+	
+	/**
+	 * 乘车日期
+	 */
+	private String trainDate;
+	
+	/**
+	 * 当天是否已设置日期，格式为2014-01-12:1时表示2014-01-12已设置过乘车日期
+	 */
+	private String initDateFlag;
 
 	// 乘车人数据集合
 	private List<PassengerData> passengerDatas;
@@ -54,4 +64,20 @@ public class MixData4UI implements Serializable {
 	public String getUserName() {
 		return userName;
 	}
+
+    public void setTrainDate(String trainDate) {
+        this.trainDate = trainDate;
+    }
+
+    public String getTrainDate() {
+        return trainDate;
+    }
+
+    public void setInitDateFlag(String initDateFlag) {
+        this.initDateFlag = initDateFlag;
+    }
+
+    public String getInitDateFlag() {
+        return initDateFlag;
+    }
 }

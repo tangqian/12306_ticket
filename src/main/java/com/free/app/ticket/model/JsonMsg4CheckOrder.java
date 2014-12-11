@@ -4,6 +4,18 @@ import com.alibaba.fastjson.JSONObject;
 
 public class JsonMsg4CheckOrder extends JsonMsgSuper {
     
+    /**
+     * {"validateMessagesShowId":"_validatorMessage",
+     * "status":true,
+     * "httpstatus":200,
+     * "data":{"submitStatus":true},
+     * "messages":[],"validateMessages":{}}
+     * 
+     * {"validateMessagesShowId":"_validatorMessage",
+     * "status":true,"httpstatus":200,
+     * "data":{"errMsg":"对不起，由于您取消次数过多，今日将不能继续受理您的订票请求。12月12日您可继续使用订票功能。","submitStatus":false},
+     * "messages":[],"validateMessages":{}}
+     */
     private JSONObject data;
 
     public void setData(JSONObject data) {

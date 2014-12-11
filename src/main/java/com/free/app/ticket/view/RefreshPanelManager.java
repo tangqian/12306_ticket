@@ -52,12 +52,16 @@ public class RefreshPanelManager {
 				public void actionPerformed(ActionEvent arg0) {
 					if (JOptionPane.showConfirmDialog(TicketMainFrame.frame,
 							"确认停止刷票吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					    TicketMainFrame.isStop = true;
-					    startButton.setEnabled(true);
+					    stop();
 					}
 				}
 			});
 		}
+	}
+	
+	public static void stop(){
+	    TicketMainFrame.isStop = true;
+        startButton.setEnabled(true);
 	}
 
 	static class StartBtn extends JButton {
@@ -66,11 +70,6 @@ public class RefreshPanelManager {
 		 * 注释内容
 		 */
 		private static final long serialVersionUID = 1L;
-
-		/**
-		 * 是否正在刷票
-		 */
-		private boolean isClicked = false;
 
 		public StartBtn(String text) {
 			super(text);
@@ -97,22 +96,19 @@ public class RefreshPanelManager {
 					if (configInfo == null)
 						return;
 
-					if (!isClicked) {
-						isClicked = true;
-						StartBtn.this.setEnabled(false);
+					StartBtn.this.setEnabled(false);
 
-						String tipsMsg = "===开始为乘客[";
-						for (PassengerData passenger : passengers) {
-							tipsMsg += passenger.getName() + ",";
-						}
-						tipsMsg = tipsMsg.substring(0, tipsMsg.length() - 1);
-						tipsMsg += "]刷票，请耐心等待===";
-						TicketMainFrame.trace(tipsMsg);
-
-						new AutoBuyThreadService(new TicketBuyInfo(configInfo,
-								passengers)).start();
+					String tipsMsg = "===开始为乘客[";
+					for (PassengerData passenger : passengers) {
+						tipsMsg += passenger.getName() + ",";
 					}
-
+					tipsMsg = tipsMsg.substring(0, tipsMsg.length() - 1);
+					tipsMsg += "]刷票，请耐心等待===";
+					TicketMainFrame.trace(tipsMsg);
+					
+					TicketMainFrame.isStop = false;
+					new AutoBuyThreadService(new TicketBuyInfo(configInfo,
+							passengers)).start();
 				}
 
 			});

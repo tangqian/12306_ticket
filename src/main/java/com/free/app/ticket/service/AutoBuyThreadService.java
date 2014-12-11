@@ -20,7 +20,9 @@ import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
 import com.free.app.ticket.view.CheckCode4OrderDialog;
-import com.free.app.ticket.view.CheckCode4OrderDialog.CancelType;
+import com.free.app.ticket.view.RefreshPanelManager;
+import com.free.app.ticket.view.CheckCode4OrderDialog.ChooseType;
+import com.free.app.ticket.view.CheckCode4OrderDialog.DialogResult;
 
 public class AutoBuyThreadService extends Thread {
     
@@ -31,6 +33,16 @@ public class AutoBuyThreadService extends Thread {
     private boolean isStop = false;
     
     private Map<String, String> cookies;
+    
+    /**
+     * 同步代码块用
+     */
+    public static final Object obj = new Object();
+    
+    /**
+     * 同步代码块用
+     */
+    public static boolean waitFlag = true;
     
     private static final Pattern PATTERN_TOKEN = Pattern.compile("var globalRepeatSubmitToken = '(\\w+)'");
     
@@ -50,8 +62,14 @@ public class AutoBuyThreadService extends Thread {
             TicketMainFrame.trace("第" + queryCount + "次余票查询");
             List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
             queryCount++;
-            if (trainInfos == null) {
-                TicketMainFrame.trace("查询不到余票信息");
+            if (trainInfos == null || trainInfos.isEmpty()) {
+                TicketMainFrame.trace("查询不到余票信息,5秒后开始下一轮查询");
+                try {
+                    Thread.sleep(5000L);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
             
@@ -69,17 +87,30 @@ public class AutoBuyThreadService extends Thread {
             showNotBuyTrains(notBuyTrain);
             showCanBuyTrains(canBuyTrain);
             if (canBuyTrain.isEmpty()) {//全部车次卖完或未开售
+                try {
+                    Thread.sleep(1000L);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
             
             List<TrainInfo> userPerfers = getUserPerfer(canBuyTrain);
             if (userPerfers.isEmpty()) {
                 TicketMainFrame.remind("您中意的车次已售完或未开售，请考虑上述其它车次(先停止刷票，再点车次设置按钮进行修改)");
+                try {
+                    Thread.sleep(1000L);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
             
-            isStop = circularSubmitOrder(userPerfers);
+            circularSubmitOrder(userPerfers);
             isStop = true;
+            RefreshPanelManager.stop();
         }
         
     }
@@ -91,11 +122,15 @@ public class AutoBuyThreadService extends Thread {
         
         Set<String> failTrainSet = new HashSet<String>();//预订失败列车
         for (TrainInfo trainInfo : userPerfers) {
-            boolean submitResult = client.submitOrderRequest(buyInfo.getConfigInfo(), cookies, trainInfo);
-            if (!submitResult) {
+            String submitResult = client.submitOrderRequest(buyInfo.getConfigInfo(), cookies, trainInfo);
+            if (submitResult != null) {
                 failTrainSet.add(trainInfo.getStation_train_code());
                 TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]进入预订页面前检查失败");
-                continue;
+                if(submitResult.contains("未完成订单")){
+                    break;
+                }else{
+                    continue;
+                }
             }
             OrderToken token = queryOrderToken();
             if (token == null) {
@@ -105,18 +140,31 @@ public class AutoBuyThreadService extends Thread {
             }
             
             TicketMainFrame.trace("车次[" + trainInfo.getStation_train_code() + "]进入订单提交确认页");
-            CancelType cancelType = CheckCode4OrderDialog.showDialog(TicketMainFrame.frame, buyInfo, token, cookies);
-            if (cancelType == CancelType.ALLAFTER) {
-                isStop = true;
+            DialogResult checkResult = CheckCode4OrderDialog.showDialog(TicketMainFrame.frame, buyInfo, token, cookies);
+            ChooseType chooseType = checkResult.getChooseType();
+            if (chooseType == ChooseType.CANCELALL) {
                 TicketMainFrame.remind("您取消了全部列车的预订");
                 break;
             }
-            else if (cancelType == CancelType.ONLYTHIS || cancelType == CancelType.DEFAULT) {//取消预订当前
+            else if (chooseType == ChooseType.CANCELTHIS || chooseType == ChooseType.DEFAULT) {//取消预订当前
                 TicketMainFrame.remind("您取消了当前车次[" + trainInfo.getStation_train_code() + "]的预订");
                 continue;
             }
-            else if (cancelType == CancelType.SUCCESS) {
-                new TrianQueueThreadService(trainInfo, token, cookies).start();
+            else if (chooseType == ChooseType.SUCCESS) {
+                synchronized (obj) {
+                    new TrianQueueThreadService(trainInfo, token, buyInfo, checkResult.getAuthcode() , cookies).start();
+                    while (waitFlag) {
+                        try {
+                            obj.wait();
+                        }
+                        catch (InterruptedException e) {
+                        }
+                    }
+                    waitFlag = true;
+                }
+                
+                
+                
             }
         }
         

@@ -89,6 +89,26 @@ public class PassengerData implements Serializable {
         public String toString() {
             return label;
         }
+        
+        public String getLabel() {
+            return label;
+        }
+        
+        /**
+         * <根据value获取enum>
+         * @param value
+         * @return
+         */
+        public static SeatType getTypeByValue(String value) {
+            SeatType ret = null;
+            for (SeatType type : SeatType.values()) {
+                if (type.getValue().equals(value)) {
+                    ret = type;
+                    break;
+                }
+            }
+            return ret;
+        }
     }
     
     public PassengerData(String name, String cardNo, String mobile) {

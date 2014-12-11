@@ -21,9 +21,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.free.app.ticket.model.TicketBuyInfo;
 import com.free.app.ticket.service.CheckOrderAuthcodeThreadService;
 import com.free.app.ticket.service.OrderAuthCodeThreadService;
@@ -34,10 +31,10 @@ public class CheckCode4OrderDialog extends JDialog {
     
     private static final long serialVersionUID = 1L;
     
-    private static final Logger logger = LoggerFactory.getLogger(CheckCode4OrderDialog.class);
+    //private static final Logger logger = LoggerFactory.getLogger(CheckCode4OrderDialog.class);
     
     /*private JButton cancelButton;*/
-    
+
     private JLabel code;
     
     private TicketBuyInfo buyInfo;
@@ -46,7 +43,7 @@ public class CheckCode4OrderDialog extends JDialog {
     
     private Map<String, String> cookies;
     
-    private CancelType chooseReturn = CancelType.DEFAULT;
+    private DialogResult callbackResult = new DialogResult(ChooseType.DEFAULT, null);;
     
     private CheckCode4OrderDialog(TicketBuyInfo buyInfo, OrderToken token, Map<String, String> cookies) {
         super();
@@ -61,16 +58,17 @@ public class CheckCode4OrderDialog extends JDialog {
         setLocation(300, 100);
     }
     
-    public static CancelType showDialog(Component relativeTo, TicketBuyInfo buyInfo, OrderToken token,
+    public static DialogResult showDialog(Component relativeTo, TicketBuyInfo buyInfo, OrderToken token,
         Map<String, String> cookies) {
         CheckCode4OrderDialog d = new CheckCode4OrderDialog(buyInfo, token, cookies);
         d.setLocationRelativeTo(relativeTo);
         d.setVisible(true);
-        return d.chooseReturn;
+        return d.callbackResult;
     }
-
-    public void setSuccess() {
-        chooseReturn = CancelType.SUCCESS;
+    
+    public void setSuccess(String authcode) {
+        callbackResult.setChooseType(ChooseType.SUCCESS);
+        callbackResult.setAuthcode(authcode);
     }
     
     public void setAuthCode(ImageIcon icon) {
@@ -110,22 +108,20 @@ public class CheckCode4OrderDialog extends JDialog {
         fl.setHgap(15);
         operatePanel.setLayout(fl);
         
-        
-        
-        JButton cancelAllButton = new JButton("全部车次取消预订");
+        JButton cancelAllButton = new JButton("取消全部");
         cancelAllButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                chooseReturn = CancelType.ALLAFTER;
+                callbackResult.setChooseType(ChooseType.CANCELALL);
                 dispose();
             }
         });
         
-        JButton cancelCurButton = new JButton("取消当前车次预订");
+        JButton cancelCurButton = new JButton("取消当前");
         cancelCurButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                chooseReturn = CancelType.ONLYTHIS;
+                callbackResult.setChooseType(ChooseType.CANCELTHIS);
                 dispose();
             }
         });
@@ -147,16 +143,46 @@ public class CheckCode4OrderDialog extends JDialog {
         return cookies;
     }
     
-    public enum CancelType {
+    public static class DialogResult {
         
-        ALLAFTER("全部取消预订"), ONLYTHIS("只取消预订当前车次"), DEFAULT("默认"), SUCCESS("授权码成功通过验证");
+        private ChooseType chooseType;
+        
+        private String authcode;
+        
+        public DialogResult(ChooseType chooseType, String authcode) {
+            super();
+            this.chooseType = chooseType;
+            this.authcode = authcode;
+        }
+        
+        public void setChooseType(ChooseType chooseType) {
+            this.chooseType = chooseType;
+        }
+        
+        public void setAuthcode(String authcode) {
+            this.authcode = authcode;
+        }
+        
+        public ChooseType getChooseType() {
+            return chooseType;
+        }
+        
+        public String getAuthcode() {
+            return authcode;
+        }
+        
+    }
+    
+    public static enum ChooseType {
+        
+        CANCELALL("全部取消预订"), CANCELTHIS("只取消预订当前车次"), DEFAULT("默认"), SUCCESS("授权码成功通过验证");
         
         private String label;
         
-        private CancelType(String label) {
+        private ChooseType(String label) {
             this.label = label;
         }
-
+        
         public String getLabel() {
             return label;
         }
@@ -210,5 +236,5 @@ public class CheckCode4OrderDialog extends JDialog {
         }
         
     }
-
+    
 }

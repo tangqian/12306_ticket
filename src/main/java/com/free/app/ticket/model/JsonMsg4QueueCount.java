@@ -4,12 +4,25 @@ import com.alibaba.fastjson.JSONObject;
 
 public class JsonMsg4QueueCount extends JsonMsgSuper {
     
+    /**
+     * eg . 返回json内容
+     * {"validateMessagesShowId":"_validatorMessage","status":true,"httpstatus":200,
+     * "data":{"count":"5","ticket":"1012303263403840000010123000003024800000","op_2":"false","countT":"0","op_1":"true"},
+     * "messages":[],"validateMessages":{}}
+     * 
+     * {"validateMessagesShowId":"_validatorMessage","status":true,"httpstatus":200,
+     * "data":{"count":"0","ticket":"1014853349404155002410148503783026350278","op_2":"false","countT":"0","op_1":"false"},
+     * "messages":[],"validateMessages":{}}
+     * 
+     * op_2为true的话表示目前排队人数已经超过余票张数 
+     * countT表示目前排队人数
+     */
     private JSONObject data;
-
+    
     public void setData(JSONObject data) {
         this.data = data;
     }
-
+    
     public JSONObject getData() {
         return data;
     }
@@ -19,56 +32,4 @@ public class JsonMsg4QueueCount extends JsonMsgSuper {
         return "JsonMsg4QueueCount [" + data.toJSONString() + "]" + super.toString();
     }
     
-    public class QueueCount {
-        /** 座位类型 **/
-        private String count;
-        /** 票字符串 **/
-        private String ticket;
-        /** op_2为true的话表示目前排队人数已经超过余票张数 **/
-        private boolean op_2;
-        private boolean op_1;
-        /** countT表示目前排队人数 **/
-        private String countT;
-
-        public String getCount() {
-            return count;
-        }
-
-        public void setCount(String count) {
-            this.count = count;
-        }
-
-        public String getTicket() {
-            return ticket;
-        }
-
-        public void setTicket(String ticket) {
-            this.ticket = ticket;
-        }
-
-        public boolean getOp_2() {
-            return op_2;
-        }
-
-        public void setOp_2(boolean op_2) {
-            this.op_2 = op_2;
-        }
-
-        public boolean getOp_1() {
-            return op_1;
-        }
-
-        public void setOp_1(boolean op_1) {
-            this.op_1 = op_1;
-        }
-
-        public String getCountT() {
-            return countT;
-        }
-
-        public void setCountT(String countT) {
-            this.countT = countT;
-        }
-
-    }
 }

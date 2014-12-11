@@ -23,6 +23,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -50,16 +51,19 @@ import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.ContacterInfo;
 import com.free.app.ticket.model.JsonMsg4Authcode;
 import com.free.app.ticket.model.JsonMsg4CheckOrder;
+import com.free.app.ticket.model.JsonMsg4ConfirmQueue;
 import com.free.app.ticket.model.JsonMsg4Contacter;
 import com.free.app.ticket.model.JsonMsg4LeftTicket;
 import com.free.app.ticket.model.JsonMsg4Login;
+import com.free.app.ticket.model.JsonMsg4QueryWait;
 import com.free.app.ticket.model.JsonMsg4QueueCount;
-import com.free.app.ticket.model.JsonMsgSuper;
+import com.free.app.ticket.model.JsonMsg4SubmitOrder;
 import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.model.TicketConfigInfo;
 import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.JsonMsg4LeftTicket.TrainQueryInfo;
 import com.free.app.ticket.model.PassengerData.SeatType;
+import com.free.app.ticket.service.AutoBuyThreadService.OrderToken;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
 import com.free.app.ticket.util.constants.UrlConstants;
@@ -311,6 +315,17 @@ public class TicketHttpClient {
         JsonMsg4QueueCount result = null;
         try {
             String checkResult = doPostRequest(post, params);
+            int reConnCount = 0;
+            while (reConnCount < 3 && StringUtils.isEmpty(checkResult)) {
+                System.out.println("----reconn-----");
+                try {
+                    Thread.sleep(100L);
+                }
+                catch (InterruptedException e) {
+                }
+                reConnCount++;
+                checkResult = doPostRequest(post, params);
+            }
             result = JSONObject.parseObject(checkResult, JsonMsg4QueueCount.class);
         }
         catch (Exception e) {
@@ -320,7 +335,81 @@ public class TicketHttpClient {
         return result;
     }
     
-    public boolean checkOrderAuthcode(String authCode, String token, List<PassengerData> passengers,
+    public JsonMsg4ConfirmQueue confirmQueue(TrainInfo train, OrderToken token, List<PassengerData> passengers,
+        String authcode, Map<String, String> cookieMap) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 确认排队购买---");
+        }
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("purpose_codes", "00"));
+        params.add(new BasicNameValuePair("key_check_isChange", token.getKey_check_isChange()));
+        params.add(new BasicNameValuePair("passengerTicketStr", getPassengerTicketStr(passengers)));
+        params.add(new BasicNameValuePair("oldPassengerStr", getOldPassengerStr(passengers)));
+        params.add(new BasicNameValuePair("randCode", authcode));
+        params.add(new BasicNameValuePair("leftTicketStr", train.getYp_info()));
+        params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token.getToken()));
+        params.add(new BasicNameValuePair("train_location", train.getLocation_code()));
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
+        HttpPost post = getHttpPost(UrlConstants.REQ_CONFIRMSINGLE_URL, cookieMap);
+        HttpHeader.setPostAjaxHeader(post);
+        
+        JsonMsg4ConfirmQueue result = null;
+        try {
+            String checkResult = doPostRequest(post, params);
+            int reConnCount = 0;
+            while (reConnCount < 3 && StringUtils.isEmpty(checkResult)) {
+                System.out.println("----reconn-----");
+                try {
+                    Thread.sleep(100L);
+                }
+                catch (InterruptedException e) {
+                }
+                reConnCount++;
+                checkResult = doPostRequest(post, params);
+            }
+            result = JSONObject.parseObject(checkResult, JsonMsg4ConfirmQueue.class);
+        }
+        catch (Exception e) {
+            logger.error("确认排队购买发生异常", e);
+            TicketMainFrame.remind("确认排队购买发生异常");
+        }
+        return result;
+    }
+    
+    /**
+     * <查询余票信息>
+     * @param configInfo
+     * @param cookieMap
+     * @return
+     */
+    public JsonMsg4QueryWait queryOrderWaitTime(String token, Map<String, String> cookieMap) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax get 查询排队等待信息---");
+        }
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("random", String.valueOf(System.currentTimeMillis())));
+        params.add(new BasicNameValuePair("tourFlag", "dc"));
+        params.add(new BasicNameValuePair("_json_att", ""));
+        params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
+        String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
+        
+        HttpGet get = getHttpGet(UrlConstants.REQ_QUERYORDERWAIT_URL + "?" + paramsUrl, cookieMap);
+        HttpHeader.setGetAjaxHeader(get);
+        
+        JsonMsg4QueryWait result = null;
+        try {
+            String checkResult = doGetRequest(get);
+            result = JSONObject.parseObject(checkResult, JsonMsg4QueryWait.class);
+        }
+        catch (Exception e) {
+            logger.error("查询排队等待信息异常", e);
+            TicketMainFrame.remind("查询排队等待信息异常");
+        }
+        return result;
+    }
+    
+    public JsonMsg4CheckOrder checkOrderAuthcode(String authCode, String token, List<PassengerData> passengers,
         Map<String, String> cookieMap) {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 检查下单验证码---");
@@ -338,13 +427,21 @@ public class TicketHttpClient {
         HttpPost post = getHttpPost(UrlConstants.REQ_CHECKORDER_URL, cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
-        boolean result = false;
+        JsonMsg4CheckOrder result = null;
         try {
             String checkResult = doPostRequest(post, params);
-            JsonMsg4CheckOrder msg = JSONObject.parseObject(checkResult, JsonMsg4CheckOrder.class);
-            if (msg.getHttpstatus() == 200 && msg.getStatus() && msg.getData().getBooleanValue("submitStatus")) {
-                result = true;
+            int reConnCount = 0;
+            while (reConnCount < 3 && StringUtils.isEmpty(checkResult)) {
+                System.out.println("----reconn-----");
+                try {
+                    Thread.sleep(100L);
+                }
+                catch (InterruptedException e) {
+                }
+                reConnCount++;
+                checkResult = doPostRequest(post, params);
             }
+            result = JSONObject.parseObject(checkResult, JsonMsg4CheckOrder.class);
         }
         catch (Exception e) {
             logger.error("检查下单验证码发生异常", e);
@@ -434,7 +531,7 @@ public class TicketHttpClient {
      * @param train
      * @return
      */
-    public boolean submitOrderRequest(TicketConfigInfo configInfo, Map<String, String> cookieMap, TrainInfo train) {
+    public String submitOrderRequest(TicketConfigInfo configInfo, Map<String, String> cookieMap, TrainInfo train) {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 进入预订页面前检验---");
         }
@@ -447,7 +544,7 @@ public class TicketHttpClient {
         catch (UnsupportedEncodingException e1) {
             logger.error("进入预订页参数编码错误", e1);
             TicketMainFrame.remind("预订页参数编码异常，请通知管理员!");
-            return false;
+            return "预订页参数编码异常，请通知管理员!";
         }
         params.add(new BasicNameValuePair("back_train_date", DateUtils.formatDate(new Date())));
         params.add(new BasicNameValuePair("tour_flag", "dc"));//单程票标识
@@ -458,23 +555,38 @@ public class TicketHttpClient {
         HttpPost post = getHttpPost(UrlConstants.REQ_SUBMITORDER_URL, cookieMap);
         HttpHeader.setPostAjaxHeader(post);
         
-        boolean result = false;
+        String result = null;
         try {
             String checkResult = doPostRequest(post, params);
-            JsonMsgSuper msg = JSONObject.parseObject(checkResult, JsonMsgSuper.class);
+            
+            int reConnCount = 0;
+            while (reConnCount < 3 && StringUtils.isEmpty(checkResult)) {
+                System.out.println("----reconn-----");
+                try {
+                    Thread.sleep(100L);
+                }
+                catch (InterruptedException e) {
+                }
+                reConnCount++;
+                checkResult = doPostRequest(post, params);
+            }
+            JsonMsg4SubmitOrder msg = JSONObject.parseObject(checkResult, JsonMsg4SubmitOrder.class);
             if (msg != null) {
                 if (msg.getHttpstatus() == 200 && msg.getStatus()) {
-                    result = true;
+                    
                 }
                 else {
-                    if (msg.getMessages() != null)
+                    if (msg.getMessages() != null) {
                         TicketMainFrame.remind(msg.getMessages()[0]);
+                        result = msg.getMessages()[0];
+                    }
                 }
             }
         }
         catch (Exception e) {
             logger.error("进入预订页面校验失败", e);
             TicketMainFrame.remind("进入预订页面校验失败");
+            result = "进入预订页面校验失败";
         }
         
         return result;
