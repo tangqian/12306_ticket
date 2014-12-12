@@ -496,7 +496,7 @@ public class TrainInfo {
         return result;
     }
     
-    public boolean isSellOut(String leftStr) {
+    public static boolean isSellOut(String leftStr) {
         if (leftStr == null || leftStr.equals("*") || leftStr.equals("--") || leftStr.equals("无")) {
             return true;
         }

@@ -8,8 +8,13 @@ import java.util.List;
  * 
  */
 public class JsonMsg4LeftTicket extends JsonMsgSuper {
-
+    
+    /**
+     * {"status":false,"c_url":"leftTicket/queryT","c_name":"CLeftTicketUrl"}
+     */
 	private List<TrainQueryInfo> data;
+	
+	private String c_url;
 
 	public List<TrainQueryInfo> getData() {
 		return data;
@@ -19,7 +24,15 @@ public class JsonMsg4LeftTicket extends JsonMsgSuper {
 		this.data = data;
 	}
 
-	public class TrainQueryInfo {
+	public void setC_url(String c_url) {
+        this.c_url = c_url;
+    }
+
+    public String getC_url() {
+        return c_url;
+    }
+
+    public class TrainQueryInfo {
 		private TrainInfo queryLeftNewDTO;
 
 		private String secretStr;

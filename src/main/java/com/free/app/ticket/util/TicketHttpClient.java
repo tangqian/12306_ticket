@@ -513,6 +513,25 @@ public class TicketHttpClient {
                         result.add(trainInfo);
                     }
                 }
+            }else{
+                if(StringUtils.isNotEmpty(msg.getC_url())){//切换地址了
+                    get = getHttpGet("https://kyfw.12306.cn/otn/" + msg.getC_url() + "?" + paramsUrl, cookieMap);
+                    HttpHeader.setGetAjaxHeader(get);
+                    checkResult = doGetRequest(get);
+                    msg = JSONObject.parseObject(checkResult, JsonMsg4LeftTicket.class);
+                    if (msg.getStatus()) {
+                        List<TrainQueryInfo> infos = msg.getData();
+                        if (infos != null) {
+                            result = new ArrayList<TrainInfo>();
+                            TrainInfo trainInfo;
+                            for (TrainQueryInfo info : infos) {
+                                trainInfo = info.getQueryLeftNewDTO();
+                                trainInfo.setSecretStr(info.getSecretStr());
+                                result.add(trainInfo);
+                            }
+                        }
+                    }
+                }
             }
         }
         catch (Exception e) {

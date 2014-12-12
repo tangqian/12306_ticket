@@ -1,6 +1,8 @@
 package com.free.app.ticket.view;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -91,6 +93,13 @@ public class ConfigPanelManager {
             configButton.setText("车次设置");
             configButton.setBounds(6, 22, 70, 28);
             search_panel.add(configButton);
+            configButton.addActionListener(new ActionListener() {
+                
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ConfigDialog.showDialog();
+                }
+            });
             
             trainConfigTips = new JLabel("未设置车次");
             search_panel.add(trainConfigTips);

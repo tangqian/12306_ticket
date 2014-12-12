@@ -58,7 +58,6 @@ public class CheckCode4OrderDialog extends JDialog {
         setResizable(false);
         setTitle("请输入验证码");
         setSize(300, 200);
-        setLocation(300, 100);
     }
     
     public static DialogResult showDialog(TrainInfo trainInfo, TicketBuyInfo buyInfo, OrderToken token,
@@ -82,21 +81,21 @@ public class CheckCode4OrderDialog extends JDialog {
         Container c = getContentPane();
         c.setLayout(new BorderLayout());
         
-        JPanel contacterPanel = new JPanel();
-        contacterPanel.setLayout(null);
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(null);
         
         String showText =
             "正在为你购买车次【" + train.getStation_train_code() + "】，席别为" + buyInfo.getCurrentBuySeat()
                 + "，请尽快输入验证码，如想更换车次，请点击下面的取消按钮";
         JLabel show = new JLabel(showText);
         show.setBounds(10, 5, 280, 50);
-        contacterPanel.add(show);
+        centerPanel.add(show);
         
         code = new JLabel();
         code.setBounds(72, 61, 78, 28);
         code.setToolTipText("点我刷新验证码！");
         code.setIcon(ResManager.createImageIcon("nocode.jpg"));
-        contacterPanel.add(code);
+        centerPanel.add(code);
         code.setHorizontalAlignment(SwingConstants.RIGHT);
         // 增加鼠标单击验证码重新获取验证码
         code.addMouseListener(new MouseAdapter() {
@@ -108,10 +107,10 @@ public class CheckCode4OrderDialog extends JDialog {
         AuthCodeTextField4Order authcode = new AuthCodeTextField4Order();
         authcode.setToolTipText(ResManager.getText("ticket.label.code.tipinfo"));
         authcode.setBounds(160, 61, 40, 21);
-        contacterPanel.add(authcode);
+        centerPanel.add(authcode);
         authcode.setColumns(10);
         
-        c.add(contacterPanel);
+        c.add(centerPanel);
         
         JPanel operatePanel = new JPanel();
         FlowLayout fl = new FlowLayout();
