@@ -18,6 +18,7 @@ import javax.swing.text.MaskFormatter;
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.MixData4UI;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainData4UI;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.StationNameUtils;
 
@@ -34,6 +35,8 @@ public class ConfigPanelManager {
     private static JLabel trainConfigTips;
     
     private static boolean isInited = false;
+    
+    private static TrainData4UI trainData; 
     
     /**
      * <界面初始化调用>
@@ -97,7 +100,7 @@ public class ConfigPanelManager {
                 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ConfigDialog.showDialog();
+                    trainData = ConfigDialog.showDialog(trainData);
                 }
             });
             
@@ -144,11 +147,14 @@ public class ConfigPanelManager {
             mixData.setTrainDate(sTrainDate);
             mixData.setInitDateFlag(DateUtils.formatDate(new Date()) + ":1");
         }
+        mixData.setTrainData(trainData);
     }
     
     public static void bindModeltoUI(MixData4UI mixData) {
         fromStation.setText(mixData.getTrainFrom());
         toStation.setText(mixData.getTrainTo());
+        
+        trainData = mixData.getTrainData();
         
         String trainDayStr = DateUtils.formatDate(DateUtils.addDays(new Date(), 59), "yyyy-MM-dd");
         if (mixData.getTrainDate() != null) {

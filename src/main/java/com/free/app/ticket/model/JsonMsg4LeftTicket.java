@@ -11,6 +11,8 @@ public class JsonMsg4LeftTicket extends JsonMsgSuper {
     
     /**
      * {"status":false,"c_url":"leftTicket/queryT","c_name":"CLeftTicketUrl"}
+     * 
+     * {"validateMessagesShowId":"_validatorMessage","status":true,"httpstatus":200,"messages":["非法请求"],"validateMessages":{}}
      */
 	private List<TrainQueryInfo> data;
 	

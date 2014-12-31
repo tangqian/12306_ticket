@@ -1,6 +1,6 @@
 package com.free.app.ticket.view;
 
-import java.awt.FlowLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -13,10 +13,13 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.free.app.ticket.TicketMainFrame;
+import com.free.app.ticket.service.CheckAuthcodeThreadService;
 import com.free.app.ticket.service.HttpClientThreadService;
 import com.free.app.ticket.service.LoginThreadService;
 import com.free.app.ticket.util.ResManager;
@@ -92,6 +95,55 @@ class LoginPanel extends JPanel {
         loginBtn = new LoginBtn(ResManager.getText("ticket.btn.login"));
         loginBtn.setBounds(560, 16, 65, 28);
         this.add(loginBtn);
+    }
+    
+    class AuthCodeTextField extends JTextField {
+        
+        /**
+         * 注释内容
+         */
+        private static final long serialVersionUID = 5291297639654513239L;
+        
+        private int maxLength = 4;
+        
+        private String oldValue = null;
+        
+        public int getMaxLength() {
+            return this.maxLength;
+        }
+        
+        public AuthCodeTextField() {
+            this.getDocument().addDocumentListener(new DocumentListener() {
+                
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                }
+                
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    if (e.getDocument().getLength() > 4) {
+                        
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                AuthCodeTextField.this.setText(oldValue);
+                            }
+                        });
+                    }
+                    else if (e.getDocument().getLength() == 4) {
+                        String newValue = AuthCodeTextField.this.getText();
+                        if( !newValue.equals(oldValue)){
+                            oldValue = newValue;
+                            new CheckAuthcodeThreadService(newValue).start();
+                        }
+                    }
+                }
+                
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                }
+            });
+        }
+        
     }
     
     class LoginBtn extends JButton {

@@ -24,7 +24,6 @@ import com.free.app.ticket.util.ComparatorTrain;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
 import com.free.app.ticket.view.CheckCode4OrderDialog;
-import com.free.app.ticket.view.RefreshPanelManager;
 import com.free.app.ticket.view.CheckCode4OrderDialog.ChooseType;
 import com.free.app.ticket.view.CheckCode4OrderDialog.DialogResult;
 
@@ -67,9 +66,9 @@ public class AutoBuyThreadService extends Thread {
             List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
             queryCount++;
             if (trainInfos == null || trainInfos.isEmpty()) {
-                TicketMainFrame.trace("查询不到余票信息,5秒后开始下一轮查询");
+                TicketMainFrame.trace("查询不到余票信息,3秒后开始下一轮查询");
                 try {
-                    Thread.sleep(5000L);
+                    Thread.sleep(3000L);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
@@ -115,8 +114,8 @@ public class AutoBuyThreadService extends Thread {
             }
             
             circularSubmitOrder(userPerfers);
-            isStop = true;
-            RefreshPanelManager.stop();
+            /*isStop = true;
+            RefreshPanelManager.stop();*/
         }
         
     }
@@ -196,7 +195,15 @@ public class AutoBuyThreadService extends Thread {
         }
         else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
             seatType = SeatType.HARD_SEAT;
+            //seatType = SeatType.HARD_SLEEPER;
         }
+        
+        /*if(!TrainInfo.isSellOut(train.getYw_num())){
+            seatType = SeatType.HARD_SLEEPER;
+        }else{
+            seatType = SeatType.HARD_SEAT;
+        }*/
+        
         
         if (seatType != null) {
             List<PassengerData> pass = buyInfo.getPassengers();
@@ -255,10 +262,15 @@ public class AutoBuyThreadService extends Thread {
     private List<TrainInfo> getUserPerfer(List<TrainInfo> all) {
         List<TrainInfo> perfers = new ArrayList<TrainInfo>();
         for (TrainInfo train : all) {
+            if(!train.getStation_train_code().equals("K9122")){
+                continue;
+            }
             if (!TrainInfo.isSellOut(train.getZe_num())) {//二等座
                 perfers.add(train);
             }
             else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
+                perfers.add(train);
+            }else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
                 perfers.add(train);
             }
             
@@ -307,6 +319,7 @@ public class AutoBuyThreadService extends Thread {
         cookies.put("_jc_save_fromDate", config.getTrain_date());
         cookies.put("_jc_save_toDate", DateUtils.formatDate(new Date()));
         cookies.put("_jc_save_wfdc_flag", "dc");
+        cookies.put("_jc_save_showZtkyts", "true");
         return cookies;
     }
     

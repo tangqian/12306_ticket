@@ -93,7 +93,7 @@ public class RefreshPanelManager {
 
 					TicketConfigInfo configInfo = ConfigPanelManager
 							.getValidConfigInfo();
-					if (configInfo == null)
+					if (configInfo == null || configInfo.getTrainDateAlias() == null)
 						return;
 
 					StartBtn.this.setEnabled(false);

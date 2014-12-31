@@ -43,7 +43,8 @@ public class TrianQueueThreadService extends Thread {
             prefix4Log = "[Thread-" + currentThread().getId() + "]正在排队买" + train.getStation_train_code() + ":";
             TicketHttpClient client = HttpClientThreadService.getHttpClient();
             String seatType = buyInfo.getPassengers().get(0).getSeatTypeValue();
-            JsonMsg4QueueCount msg = client.getQueueCount(train, seatType, orderToken.getToken(), cookies);
+            JsonMsg4QueueCount msg =
+                client.getQueueCount(train, buyInfo.getConfigInfo().getTrainDateAlias(), seatType, orderToken.getToken(), cookies);
             if (msg == null || msg.getData().getBooleanValue("op_2")) {
                 TicketMainFrame.remind(prefix4Log + "排队人数超过余票数!将预订其它车次");
             }
@@ -85,7 +86,7 @@ public class TrianQueueThreadService extends Thread {
         
         if (enterQueue) {
             int waitCount = 0;
-            while (waitCount < 1) {
+            while (waitCount < 10) {
                 JsonMsg4QueryWait waitMsg = client.queryOrderWaitTime(orderToken.getToken(), cookies);
                 if (waitMsg == null) {
                     TicketMainFrame.remind(prefix4Log + "查询排队信息出错");
@@ -109,11 +110,11 @@ public class TrianQueueThreadService extends Thread {
                         }
                     }
                 }
-                /*try {
+                try {
                     Thread.sleep(1000l);
                 }
                 catch (InterruptedException e) {
-                }*/
+                }
                 waitCount++;
             }
         }

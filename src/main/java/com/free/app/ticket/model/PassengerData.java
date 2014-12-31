@@ -109,6 +109,35 @@ public class PassengerData implements Serializable {
             }
             return ret;
         }
+        
+        /**
+         * <获取有序的席别数组>
+         * @param startOrdinal
+         * @param endOrdinal
+         * @return
+         */
+        public static SeatType[] getSortValues(SeatType startType, SeatType endType) {
+            SeatType[] ret = null;
+            SeatType[] values = SeatType.values();
+            int startOrdinal = startType.ordinal();
+            int endOrdinal = endType.ordinal();
+            if (startOrdinal > endOrdinal) {
+                ret = new SeatType[startOrdinal - endOrdinal + 1];
+                int pos = 0;
+                for (int i = startOrdinal; i >= endOrdinal; i--) {
+                    ret[pos++] = values[i];
+                }
+            }
+            else {
+                ret = new SeatType[endOrdinal - startOrdinal + 1];
+                int pos = 0;
+                for (int i = startOrdinal; i <= endOrdinal; i++) {
+                    ret[pos++] = values[i];
+                }
+            }
+            
+            return ret;
+        }
     }
     
     public PassengerData(String name, String cardNo, String mobile) {

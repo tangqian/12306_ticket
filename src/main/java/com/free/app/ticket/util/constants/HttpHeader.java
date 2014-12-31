@@ -9,29 +9,19 @@ import org.apache.http.client.methods.HttpRequestBase;
  */
 public class HttpHeader {
     
-    private static String REFERER = "Referer";
-    
-    private static String CACHECONTROL = "Cache-Control";
-    
-    private static String XREQUESTEDWITH = "x-requested-with";
-    
-    private static String CONTENTTYPE = "Content-Type";
-    
-    private static String CACHECONTROL_VALUE = "no-cache";
-    
-    private static String CONTENTTYPE_UTF8_VALUE = "application/x-www-form-urlencoded; charset=UTF-8";
-    
-    private static String CONTENTTYPE_VALUE = "application/x-www-form-urlencoded";
-    
-    private static String XREQUESTEDWITH_VALUE = "XMLHttpRequest";
-    
     private static void setBaseHeader(HttpRequestBase http) {
-        http.setHeader("Accept-Encoding", "gzip, deflate");
-        http.setHeader("Accept-Language", "zh-cn");
-        http.setHeader("Connection", "keep-alive");
         http.setHeader("Host", "kyfw.12306.cn");
-        http.setHeader("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)");
-        http.setHeader("Referer", "https://kyfw.12306.cn/");
+        http.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:34.0) Gecko/20100101 Firefox/34.0");
+        http.setHeader("Accept", "*/*");
+        http.setHeader("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
+        http.setHeader("Accept-Encoding", "gzip, deflate");
+        http.setHeader("Connection", "keep-alive");
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Referer", "https://kyfw.12306.cn/otn/login/init");
+    }
+    
+    public static void setCommonHeader(HttpRequestBase http){
+        setBaseHeader(http);
     }
     
     public static void setLoginInitHeader(HttpRequestBase http) {
@@ -51,9 +41,27 @@ public class HttpHeader {
     public static void setPostAjaxHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
+        
+        
+    }
+    
+    public static void setSpe(HttpRequestBase http){
+      //setBaseHeader(http);
+        http.setHeader("Host", "kyfw.12306.cn");
+        http.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:34.0) Gecko/20100101 Firefox/34.0");
+        http.setHeader("Accept", "*/*");
+        http.setHeader("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
+        http.setHeader("Accept-Encoding", "gzip, deflate");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
+        http.setHeader("Referer", "https://kyfw.12306.cn/otn/login/init");
+        //http.setHeader("Content-Length", "152");
+        http.setHeader("Cookie", "tmp");
+        http.setHeader("Connection", "keep-alive");
+        http.setHeader("Pragma", "no-cache");
+        http.setHeader("Cache-Control", "no-cache");
     }
     
     /**
@@ -63,52 +71,51 @@ public class HttpHeader {
     public static void setGetAjaxHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         http.setHeader("If-Modified-Since", "0");
-        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
     }
     
     public static void setLogoutHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader(REFERER, "https://kyfw.12306.cn/otn/index/init");
     }
     
     public static void setLoginHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded");
     }
     
     public static void setTiketInitHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded");
     }
     
     public static void setTiketSearchHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
         http.setHeader("If-Modified-Since", "0");
-        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
     }
     
     public static void setSubmitOrderHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "*/*");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
     }
     
     public static void setInitDcHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "text/html,application/xhtml+xml,application/xml,*/*");
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_VALUE);
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded");
     }
     
     /**
@@ -118,8 +125,8 @@ public class HttpHeader {
     public static void setCheckOrderHeader(HttpRequestBase http) {
         setBaseHeader(http);
         http.setHeader("Accept", "application/json, text/javascript, */*; q=0.01");
-        http.setHeader(CACHECONTROL, CACHECONTROL_VALUE);
-        http.setHeader(CONTENTTYPE, CONTENTTYPE_UTF8_VALUE);
-        http.setHeader(XREQUESTEDWITH, XREQUESTEDWITH_VALUE);
+        http.setHeader("Cache-Control", "no-cache");
+        http.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        http.setHeader("X-Requested-With", "XMLHttpRequest");
     }
 }
