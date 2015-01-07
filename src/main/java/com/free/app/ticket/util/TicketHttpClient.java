@@ -79,13 +79,13 @@ public class TicketHttpClient {
     
     private static final Logger logger = LoggerFactory.getLogger(TicketHttpClient.class);
     
-    private String JSESSIONID;
+    private String JSESSIONID = null;
     
-    private String BIGipServerotn;
+    private String BIGipServerotn = null;
     
     private String current_captcha_type;
     
-    private String loginKey;
+    private String loginKey = null;
     
     private static final int DEBBUG_MAX_COUNT = 1000;
     
@@ -181,7 +181,7 @@ public class TicketHttpClient {
     
     private void buildLoginKey(String jsFileName) {
         if (logger.isDebugEnabled()) {
-            logger.debug("---ajax get 获取登录页dynamicJs的内容，从中提取出登录KEY---");
+            logger.debug("---ajax get 获取登录页dynamicJs的内容，从中提取出登录key---");
         }
         
         HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName);
@@ -194,12 +194,13 @@ public class TicketHttpClient {
             Matcher m_token = PATTERN_LOGIN_KEY.matcher(result);
             if (m_token.find()) {
                 loginKey = m_token.group(1);
-                System.out.println(loginKey);
+                System.out.println("登录key "+loginKey);
+                TicketMainFrame.trace("获取登录key成功");
             }
         }
         catch (Exception e) {
-            logger.error("获取登录KEY出错", e);
-            TicketMainFrame.remind("获取登录KEY出错");
+            logger.error("获取登录key出错", e);
+            TicketMainFrame.remind("获取登录key出错");
         }
     }
     

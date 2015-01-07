@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -15,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import com.free.app.ticket.model.ContacterInfo;
+import com.free.app.ticket.model.PassengerData;
 
 public class SelContacterDialog extends JDialog {
     private static final long serialVersionUID = 1L;
@@ -29,11 +31,14 @@ public class SelContacterDialog extends JDialog {
     
     private ContacterInfo[] selectContacters = null;
     
+    private List<PassengerData> selectPassengers = null;
+    
     private static int MAX_PASSENGERS = 5;
     
-    private SelContacterDialog(ContacterInfo[] contacters) {
+    private SelContacterDialog(ContacterInfo[] contacters, List<PassengerData> selectPassengers) {
         super();
         this.contacters = contacters;
+        this.selectPassengers = selectPassengers;
         init();
         setModal(true);
         setResizable(false);
@@ -53,6 +58,13 @@ public class SelContacterDialog extends JDialog {
             boxs = new JCheckBox[contacters.length];
             for (int i = 0; i < contacters.length; i++) {
                 JCheckBox cb1 = new JCheckBox(contacters[i].getPassenger_name(), false);
+				PassengerData passenger = new PassengerData(
+						contacters[i].getPassenger_name(),
+						contacters[i].getPassenger_id_no(),
+						contacters[i].getMobile_no());
+				if (selectPassengers.contains(passenger)) {
+					cb1.setSelected(true);
+				}
                 boxs[i] = cb1;
                 cb1.addItemListener(itemListener);
                 contacterPanel.add(cb1);
@@ -111,8 +123,8 @@ public class SelContacterDialog extends JDialog {
         
     }
     
-    public static ContacterInfo[] showDialog(Component relativeTo, ContacterInfo[] contacters) {
-        SelContacterDialog d = new SelContacterDialog(contacters);
+    public static ContacterInfo[] showDialog(Component relativeTo, ContacterInfo[] contacters, List<PassengerData> selectPassengers) {
+        SelContacterDialog d = new SelContacterDialog(contacters, selectPassengers);
         d.setLocationRelativeTo(relativeTo);
         d.setVisible(true);
         return d.getSelected();

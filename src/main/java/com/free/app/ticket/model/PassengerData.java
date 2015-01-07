@@ -24,7 +24,7 @@ public class PassengerData implements Serializable {
     
     private TicketType ticketType = TicketType.ADULT;
     
-    private SeatType seatType = SeatType.HARD_SEAT;
+    private SeatType seatType = SeatType.TWO_SEAT;
     
     public enum TicketType {
         ADULT("成人票", "1"), CHILD("儿童票", "2"), STUDENT("学生票", "3"), SOLDIER("残军票", "4");
@@ -211,5 +211,15 @@ public class PassengerData implements Serializable {
     public String getSeatTypeValue() {
         return seatType.getValue();
     }
+
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		PassengerData passenger = (PassengerData)obj;
+		if (passenger.cardNo.equals(this.cardNo)) {
+			return true;
+		}
+		return false;
+	}
     
 }

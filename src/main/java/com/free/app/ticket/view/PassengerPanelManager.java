@@ -53,6 +53,7 @@ public class PassengerPanelManager {
             parent.setLayout(null);
             parent.setBounds(10, 130, 780, 250);
             parent.setBorder(new TitledBorder("第三步：乘车人信息"));
+            parent.setToolTipText("双击删除乘客");
             frame.getContentPane().add(parent);
             
             JScrollPane scrollPane = new JScrollPane();
@@ -62,7 +63,15 @@ public class PassengerPanelManager {
             String[][] row = new String[0][6];
             String[] column =
             {"姓名", "身份证号", "手机号码"};
-            tableModel = new DefaultTableModel(row, column);
+            tableModel = new DefaultTableModel(row, column)
+            //	重写isCellEditable方法
+            {
+            	@Override
+            	public boolean isCellEditable(int row, int column) {
+            		return false;
+            	}
+            }
+            ;
             
             table = new JTable(tableModel);
             table.setDefaultRenderer(Integer.class, new MyRenderer());
@@ -73,20 +82,33 @@ public class PassengerPanelManager {
             
             table.addMouseListener(new MouseAdapter() { // 鼠标事件
                 public void mouseClicked(MouseEvent e) {
-                    int selectedRow = table.getSelectedRow(); // 获得选中行索引
-                    Object oa = tableModel.getValueAt(selectedRow, 0);
-                    Object ob = tableModel.getValueAt(selectedRow, 1);
-                    Object oc = tableModel.getValueAt(selectedRow, 2);
-                    passengerName.setText(oa.toString()); // 给文本框赋值
-                    cardNo.setText(ob.toString());
-                    mobile.setText(oc.toString());
+                	int selectedRow = table.getSelectedRow(); // 获得选中行索引
+                	//	双击删除一行
+                	if (e.getClickCount() == 2) {
+                		tableModel.removeRow(selectedRow);
+                		passengerName.setText("");
+                		cardNo.setText("");
+                		mobile.setText("");
+                	}
+                	else {
+						Object oa = tableModel.getValueAt(selectedRow, 0);
+						Object ob = tableModel.getValueAt(selectedRow, 1);
+						Object oc = tableModel.getValueAt(selectedRow, 2);
+						passengerName.setText(oa.toString()); // 给文本框赋值
+						cardNo.setText(ob.toString());
+						mobile.setText(oc.toString());
+					}
                 }
             });
+            
+            
         }
     }
     
     public static void addPassenger(ContacterInfo[] selected) {
         if (isInited && selected != null) {
+        	List<PassengerData> selectPassengers = getPassenger();
+        	
             for (ContacterInfo contacterInfo : selected) {
                 if (table.getRowCount() >= 5) {
                     TicketMainFrame.remind("最多只能购买5张票!");
@@ -95,6 +117,11 @@ public class PassengerPanelManager {
                 else {
                     if (contacterInfo == null)
                         continue;
+                    PassengerData passenger = new PassengerData(contacterInfo.getPassenger_name(), contacterInfo.getPassenger_id_no(),
+                            contacterInfo.getMobile_no());
+                    if (selectPassengers.contains(passenger)) {
+                    	continue;
+                    }
                     String[] rowValues =
                         {contacterInfo.getPassenger_name(), contacterInfo.getPassenger_id_no(),
                             contacterInfo.getMobile_no()};
