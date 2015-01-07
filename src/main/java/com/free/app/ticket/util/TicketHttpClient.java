@@ -478,7 +478,7 @@ public class TicketHttpClient {
             logger.debug("---ajax post 进入预订页面前检验---");
         }
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("NTQ3NjE2", "OWY2YmExNzM5OWM4YjJkNQ=="));
+        params.add(new BasicNameValuePair(loginKey, DynamicJsUtil.encode32(DynamicJsUtil.bin216(Base32.encrypt("1111", loginKey)))));
         params.add(new BasicNameValuePair("myversion", "undefiend"));
         try {
             params.add(new BasicNameValuePair("secretStr", URLDecoder.decode(train.getSecretStr(), "UTF-8")));

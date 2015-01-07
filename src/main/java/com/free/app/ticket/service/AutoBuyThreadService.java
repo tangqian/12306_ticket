@@ -262,15 +262,16 @@ public class AutoBuyThreadService extends Thread {
     private List<TrainInfo> getUserPerfer(List<TrainInfo> all) {
         List<TrainInfo> perfers = new ArrayList<TrainInfo>();
         for (TrainInfo train : all) {
-            if(!train.getStation_train_code().equals("K9122")){
-                continue;
-            }
             if (!TrainInfo.isSellOut(train.getZe_num())) {//二等座
                 perfers.add(train);
             }
             else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
                 perfers.add(train);
-            }else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
+            }
+            else if (!TrainInfo.isSellOut(train.getYw_num())) {//硬卧
+            	perfers.add(train);
+            }
+            else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
                 perfers.add(train);
             }
             
