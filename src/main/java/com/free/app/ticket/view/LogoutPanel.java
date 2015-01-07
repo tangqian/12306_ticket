@@ -3,6 +3,7 @@ package com.free.app.ticket.view;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,6 +15,7 @@ import javax.swing.border.TitledBorder;
 
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.ContacterInfo;
+import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.service.HttpClientThreadService;
 import com.free.app.ticket.util.ResManager;
 import com.free.app.ticket.util.TicketHttpClient;
@@ -65,8 +67,9 @@ class LogoutPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 TicketHttpClient client = HttpClientThreadService.getHttpClient();
+                List<PassengerData> selectPassengers = PassengerPanelManager.getPassenger();
                 ContacterInfo[] contacters = client.getPassengers();
-                ContacterInfo[] selected = SelContacterDialog.showDialog(frame, contacters);//弹出乘客选择框，并取得被选中乘客
+                ContacterInfo[] selected = SelContacterDialog.showDialog(frame, contacters, selectPassengers);//弹出乘客选择框，并取得被选中乘客
                 PassengerPanelManager.addPassenger(selected);//加入待购票乘客表格中
             }
             
