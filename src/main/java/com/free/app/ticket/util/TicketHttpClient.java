@@ -184,8 +184,9 @@ public class TicketHttpClient {
             logger.debug("---ajax get 获取登录页dynamicJs的内容，从中提取出登录KEY---");
         }
         
-        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName, null);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName);
         HttpHeader.setCommonHeader(get);
+        setCookie(get, null);
         
         try {
             String result = doGetRequest(get);
@@ -202,35 +203,11 @@ public class TicketHttpClient {
         }
     }
     
-    public void testRequest() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("---测试本地url地址---");
-        }
-        
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("loginUserDTO.user_name", ""));
-        params.add(new BasicNameValuePair("userDTO.password", ""));
-        params.add(new BasicNameValuePair("randCode", "2sqm"));
-        params.add(new BasicNameValuePair("randCode_validate", ""));
-        params.add(new BasicNameValuePair("NzMzNDc5", "NWUzOTQ5N2E1ZGY5YmFjZA=="));
-        params.add(new BasicNameValuePair("myversion", "undefined"));
-        
-        HttpPost get = getHttpPost("http://localhost/vodauft_epg/deviceappauth.action?appid=A1X3501FMWLU&terminal=4&machineno=1013832693989412&firmware=23&pmid=1&version=1.2&lang=en", null);
-        HttpHeader.setCommonHeader(get);
-        
-        try {
-            String result = doPostRequest(get, params);
-            System.out.println(result);
-        }
-        catch (Exception e) {
-            logger.error("访问本地url地址出错", e);
-        }
-    }
-    
     public File buildLoginCodeImage() {
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=login&rand=sjrand", null);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=login&rand=sjrand");
         HttpHeader.setLoginAuthCodeHeader(get);
+        setCookie(get, null);
         
         File file = new File(System.getProperty("java.io.tmpdir") + File.separator + JSESSIONID + ".login.jpg");
         OutputStream out = null;
@@ -293,8 +270,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair(Constants.CHECKCODE_PARAMS_RAND, "sjrand"));
         params.add(new BasicNameValuePair(Constants.RANDCODE_VALIDATE, ""));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn", null);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
         
         boolean result = false;
         try {
@@ -336,13 +314,14 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("randCode_validate", ""));
         if (loginKey != null)
             params.add(new BasicNameValuePair(loginKey,
-                DynamicJsUtil.encode32(DynamicJsUtil.bin216(Base32.encrypt("1111", "ODQwODk2")))));
+                DynamicJsUtil.encode32(DynamicJsUtil.bin216(Base32.encrypt("1111", loginKey)))));
         params.add(new BasicNameValuePair("myversion", "undefined"));
         
-        //HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest", null);
+        /*HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest", null);
+        HttpHeader.setPostAjaxHeader(post);*/
         HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest");
-        HttpHeader.setSpe(post);
-        post.setHeader("Cookie", getCookieStr(null));
+        HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
         
         String result = null;
         try {
@@ -366,8 +345,9 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 获取联系人---");
         }
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs", null);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
         
         ContacterInfo[] result = null;
         try {
@@ -410,8 +390,9 @@ public class TicketHttpClient {
         if ("A".equals(current_captcha_type) || "C".equals(current_captcha_type)) {//验证码为A类型时，查询前先调用LOG请示
             queryLog(paramsUrl, cookieMap);
         }
-        HttpGet get = getHttpGet(query_url + "?" + paramsUrl, cookieMap);
+        HttpGet get = new HttpGet(query_url + "?" + paramsUrl);
         HttpHeader.setGetAjaxHeader(get);
+        setCookie(get, cookieMap);
         
         List<TrainInfo> result = null;
         try {
@@ -467,8 +448,9 @@ public class TicketHttpClient {
             logger.debug("---ajax get 查询余票前先LOG---");
         }
         
-        HttpGet get = getHttpGet("https://kyfw.12306.cn/otn/leftTicket/log?" + paramsUrl, cookieMap);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/leftTicket/log?" + paramsUrl);
         HttpHeader.setGetAjaxHeader(get);
+        setCookie(get, cookieMap);
         
         try {
             String checkResult = doGetRequest(get);
@@ -512,8 +494,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("query_from_station_name", configInfo.getFrom_station_name()));
         params.add(new BasicNameValuePair("query_to_station_name", configInfo.getTo_station_name()));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest", cookieMap);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, cookieMap);
         
         String result = null;
         try {
@@ -564,8 +547,9 @@ public class TicketHttpClient {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/initDc", cookieMap);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/initDc");
         HttpHeader.setInitDcHeader(post);
+        setCookie(post, cookieMap);
         
         String result = null;
         try {
@@ -584,9 +568,9 @@ public class TicketHttpClient {
             logger.debug("---ajax get 获取提交订单验证码---");
         }
         HttpClient httpclient = buildHttpClient();
-        HttpGet get =
-            getHttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp", cookies);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp");
         HttpHeader.setLoginAuthCodeHeader(get);
+        setCookie(get, cookies);
         
         File file = new File(System.getProperty("java.io.tmpdir") + File.separator + JSESSIONID + ".order.jpg");
         OutputStream out = null;
@@ -643,8 +627,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("tour_flag", "dc"));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo", cookieMap);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, cookieMap);
         
         JsonMsg4CheckOrder result = null;
         try {
@@ -689,8 +674,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_date", df.format(trianDate) + " 00:00:00 GMT+0800"));//Sun Feb 01 2015 00:00:00 GMT+0800
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount", cookieMap);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, cookieMap);
         
         JsonMsg4QueueCount result = null;
         try {
@@ -731,8 +717,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_location", train.getLocation_code()));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue", cookieMap);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue");
         HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, cookieMap);
         
         JsonMsg4ConfirmQueue result = null;
         try {
@@ -774,9 +761,9 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
         String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
         
-        HttpGet get =
-            getHttpGet("https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime" + "?" + paramsUrl, cookieMap);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime" + "?" + paramsUrl);
         HttpHeader.setGetAjaxHeader(get);
+        setCookie(get, cookieMap);
         
         JsonMsg4QueryWait result = null;
         try {
@@ -798,8 +785,9 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---post 登录退出---");
         }
-        HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginOut", null);
+        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/loginOut");
         HttpHeader.setLogoutHeader(post);
+        setCookie(post, null);
         
         try {
             doPostRequest(post, null);
@@ -968,26 +956,6 @@ public class TicketHttpClient {
                 logger.debug("[responseBody] {}", responseBody);
         }
         return responseBody;
-    }
-    
-    /**
-     * 创建get请求
-     * 
-     */
-    private HttpGet getHttpGet(String url, Map<String, String> cookieMap) {
-        HttpGet get = new HttpGet(url);
-        setCookie(get, cookieMap);
-        return get;
-    }
-    
-    /**
-     * 创建post请求
-     * 
-     */
-    private HttpPost getHttpPost(String url, Map<String, String> cookieMap) {
-        HttpPost post = new HttpPost(url);
-        setCookie(post, cookieMap);
-        return post;
     }
     
     private void setCookie(HttpRequestBase request, Map<String, String> cookieMap) {
