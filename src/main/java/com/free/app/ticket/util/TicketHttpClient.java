@@ -208,8 +208,8 @@ public class TicketHttpClient {
         }
         
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("loginUserDTO.user_name", "tangqian9140"));
-        params.add(new BasicNameValuePair("userDTO.password", "cswg4520"));
+        params.add(new BasicNameValuePair("loginUserDTO.user_name", ""));
+        params.add(new BasicNameValuePair("userDTO.password", ""));
         params.add(new BasicNameValuePair("randCode", "2sqm"));
         params.add(new BasicNameValuePair("randCode_validate", ""));
         params.add(new BasicNameValuePair("NzMzNDc5", "NWUzOTQ5N2E1ZGY5YmFjZA=="));
