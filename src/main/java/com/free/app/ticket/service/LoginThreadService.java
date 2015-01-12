@@ -33,17 +33,23 @@ public class LoginThreadService extends Thread {
                 if ("randCodeError".equals(result)) {//验证码错误时不重新获取验证码
                     result = "验证码不正确！";
                 }
-                if (result.startsWith("密码输入错误")) {
-                    LoginPanelManager.requestFocus2Password();
-                }
-                else if (result.startsWith("登录名不存在")) {
-                    LoginPanelManager.requestFocus2Username();
-                }
-                else if (result.startsWith("验证码")) {
-                    LoginPanelManager.requestFocus2Authcode();
-                }
-                TicketMainFrame.alert(result);
-                new HttpClientThreadService().start();//重新获取验证码
+				// 验证未通过
+				if (result.startsWith("网络繁忙")) {
+					TicketMainFrame.remind(result);
+					// 验证失败，刷新key
+					HttpClientThreadService.restart();
+				} else {
+					if (result.startsWith("密码输入错误")) {
+						LoginPanelManager.requestFocus2Password();
+					} else if (result.startsWith("登录名不存在")) {
+						LoginPanelManager.requestFocus2Username();
+					} else if (result.startsWith("验证码")) {
+						LoginPanelManager.requestFocus2Authcode();
+					}
+
+					TicketMainFrame.alert(result);
+					new HttpClientThreadService().start();// 重新获取验证码
+				}
             }
         }
         LoginPanelManager.setLoginEnabled();

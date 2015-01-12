@@ -63,15 +63,13 @@ public class PassengerPanelManager {
             String[][] row = new String[0][6];
             String[] column =
             {"姓名", "身份证号", "手机号码"};
-            tableModel = new DefaultTableModel(row, column)
-            //	重写isCellEditable方法
-            {
+            tableModel = new DefaultTableModel(row, column) {
+            	// 重写isCellEditable方法
             	@Override
             	public boolean isCellEditable(int row, int column) {
             		return false;
             	}
-            }
-            ;
+            };
             
             table = new JTable(tableModel);
             table.setDefaultRenderer(Integer.class, new MyRenderer());

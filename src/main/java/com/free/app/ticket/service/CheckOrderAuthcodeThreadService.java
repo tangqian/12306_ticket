@@ -21,6 +21,7 @@ public class CheckOrderAuthcodeThreadService extends Thread {
     @Override
     public void run() {
         TicketHttpClient client = HttpClientThreadService.getHttpClient();
+        
         JsonMsg4CheckOrder msg =
             client.checkOrderAuthcode(authcode, dialog.getToken().getToken(), dialog.getBuyInfo().getPassengers(), dialog.getCookies());
         

@@ -84,7 +84,7 @@ public class DynamicJsUtil {
             int n = v.length - 1;
             int z = v[n], y = v[0];
             int mx, e, p, sum = 0;
-            int q = 6 + 52 / (n + 1);
+            int q = (int)Math.floor( 6 + 52 / (n + 1) );
             while (0 < q--) {
                 sum = sum + delta & 0xffffffff;
                 e = sum >>> 2 & 3;
@@ -173,6 +173,16 @@ public class DynamicJsUtil {
             }
         }
         return tmp.toString();
+    }
+    
+    /**
+     * 获取动态参数
+     * @param key
+     * @return
+     */
+    public static String getRandomParamValue(String key) {
+    	return encode32(DynamicJsUtil
+				.bin216(Base32.encrypt("1111", key)));
     }
     
     public static void main(String[] args) throws UnsupportedEncodingException {

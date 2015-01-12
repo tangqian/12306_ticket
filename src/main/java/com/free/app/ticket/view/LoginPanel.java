@@ -88,7 +88,7 @@ class LoginPanel extends JPanel {
         
         authcode = new AuthCodeTextField();
         authcode.setToolTipText(ResManager.getText("ticket.label.code.tipinfo"));
-        authcode.setBounds(490, 20, 40, 21);
+        authcode.setBounds(490, 20, 50, 21);
         this.add(authcode);
         authcode.setColumns(7);
         

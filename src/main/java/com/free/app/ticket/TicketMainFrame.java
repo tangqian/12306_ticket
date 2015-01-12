@@ -32,6 +32,7 @@ import com.free.app.ticket.util.ResManager;
 import com.free.app.ticket.view.ConfigPanelManager;
 import com.free.app.ticket.view.ConsolePane;
 import com.free.app.ticket.view.LoginPanelManager;
+import com.free.app.ticket.view.LogoutPanel;
 import com.free.app.ticket.view.PassengerPanelManager;
 import com.free.app.ticket.view.RefreshPanelManager;
 
@@ -114,6 +115,11 @@ public class TicketMainFrame extends JFrame {
         // 关闭窗口 保存相关用户信息
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
+            	// 退出登录
+            	if (LoginPanelManager.isLogged()) {
+            		LogoutPanel.loginOut();
+            	}
+            	
                 // 保存用户实体
                 try {
                     ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath));

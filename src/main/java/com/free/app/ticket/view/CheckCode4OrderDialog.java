@@ -64,6 +64,7 @@ public class CheckCode4OrderDialog extends JDialog {
         Map<String, String> cookies) {
         CheckCode4OrderDialog d = new CheckCode4OrderDialog(trainInfo, buyInfo, token, cookies);
         d.setLocationRelativeTo(TicketMainFrame.frame);
+        new OrderAuthCodeThreadService(d).start();
         d.setVisible(true);
         return d.callbackResult;
     }
