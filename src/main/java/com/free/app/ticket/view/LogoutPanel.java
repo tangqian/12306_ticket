@@ -24,7 +24,7 @@ import com.free.app.ticket.util.TicketHttpClient;
  * 
  * <登出面板UI类>
  */
-class LogoutPanel extends JPanel {
+public class LogoutPanel extends JPanel {
     
     /**
      * 注释内容
@@ -110,4 +110,10 @@ class LogoutPanel extends JPanel {
         this.add(logoutBtn);
     }
     
+    public static void loginOut() {
+    	TicketHttpClient client = HttpClientThreadService.getHttpClient();
+        if (client != null) {
+            client.loginOut();
+        }
+    }
 }

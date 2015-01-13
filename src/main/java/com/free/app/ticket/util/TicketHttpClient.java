@@ -75,6 +75,14 @@ import com.free.app.ticket.util.DynamicJsUtil.Base32;
 import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
 
+/**
+ * @author steven
+ *
+ */
+/**
+ * @author steven
+ *
+ */
 public class TicketHttpClient {
     
     private static final Logger logger = LoggerFactory.getLogger(TicketHttpClient.class);
@@ -86,6 +94,10 @@ public class TicketHttpClient {
     private String current_captcha_type;
     
     private String loginKey = null;
+    
+    private String orderTicketKey = null;
+    
+    private String checkOrderKey = null;
     
     private static final int DEBBUG_MAX_COUNT = 1000;
     
@@ -112,7 +124,7 @@ public class TicketHttpClient {
      * @return
      */
     public static TicketHttpClient getInstance() {
-        TicketHttpClient instacne = null;
+        TicketHttpClient instance = null;
         HttpClient httpclient = buildHttpClient();
         HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/login/init");
         HttpHeader.setLoginInitHeader(get);
@@ -120,7 +132,7 @@ public class TicketHttpClient {
         String JSESSIONID = null;
         String BIGipServerotn = null;
         InputStream is = null;
-        String loginDynamicJsUrl = null;
+        String loginDynamicJs = null;
         try {
             HttpResponse response = httpclient.execute(get);
             Header[] headers = response.getAllHeaders();
@@ -155,7 +167,7 @@ public class TicketHttpClient {
                 
                 Matcher m_token = PATTERN_DYNAMIC_JS.matcher(responseBody);
                 if (m_token.find()) {
-                    loginDynamicJsUrl = m_token.group(1);
+                    loginDynamicJs = m_token.group(1);
                 }
                 else {
                     logger.error("httpClient init get loginDynamicJsUrl  fail for unknow reason, check it!");
@@ -171,36 +183,81 @@ public class TicketHttpClient {
         }
         
         if (JSESSIONID != null && BIGipServerotn != null) {
-            instacne = new TicketHttpClient(JSESSIONID, BIGipServerotn);
-            if (loginDynamicJsUrl != null) {
-                instacne.buildLoginKey(loginDynamicJsUrl);
+        	instance = new TicketHttpClient(JSESSIONID, BIGipServerotn);
+            if (loginDynamicJs != null) {
+            	instance.loginKey = instance.getRandomParamKey(loginDynamicJs);
             }
         }
-        return instacne;
+        
+        return instance;
     }
     
-    private void buildLoginKey(String jsFileName) {
-        if (logger.isDebugEnabled()) {
+    /**
+     * 获取动态参数
+     * @param jsFileName
+     * @return
+     */
+    private String getRandomParamKey(String jsFileName) {
+    	if (logger.isDebugEnabled()) {
             logger.debug("---ajax get 获取登录页dynamicJs的内容，从中提取出登录key---");
         }
         
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName);
+        String dynamicJsUrl = "https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName;
+        HttpGet get = new HttpGet(dynamicJsUrl);
         HttpHeader.setCommonHeader(get);
         setCookie(get, null);
         
+        String key = null;
         try {
             String result = doGetRequest(get);
             
+            clearKeyTimmer(result);
+            
             Matcher m_token = PATTERN_LOGIN_KEY.matcher(result);
             if (m_token.find()) {
-                loginKey = m_token.group(1);
-                System.out.println("登录key "+loginKey);
-                TicketMainFrame.trace("获取登录key成功");
+                key = m_token.group(1);
+                System.out.println("key "+key);
             }
         }
         catch (Exception e) {
-            logger.error("获取登录key出错", e);
-            TicketMainFrame.remind("获取登录key出错");
+            logger.error("获取key出错", e);
+            TicketMainFrame.remind("获取key出错");
+        }
+    	
+    	return key;
+    }
+    
+    /**
+     * 清除key失效时间
+     * @param jsStr
+     */
+    private void clearKeyTimmer(String jsStr) {
+    	if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 清除key失效时间---");
+        }
+    	
+    	Matcher m_token = PATTERN_DYNAMIC_JS.matcher(jsStr);
+        String jsFileName = null;
+    	if (m_token.find()) {
+            jsFileName = m_token.group(1);
+        }
+    	if (jsFileName == null) {
+    		logger.error("清除key失效时间出错");
+    	}
+        
+    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+    	params.add(new BasicNameValuePair("_json_att", ""));
+    	
+        String dynamicJsUrl = "https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName;
+        HttpPost post = new HttpPost(dynamicJsUrl);
+        HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
+        
+        try {
+        	doPostRequest(post, params);
+        }
+        catch (Exception e) {
+        	logger.error("清除key失效时间出错", e);
         }
     }
     
@@ -313,9 +370,13 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("userDTO.password", password));
         params.add(new BasicNameValuePair("randCode", authcode));
         params.add(new BasicNameValuePair("randCode_validate", ""));
-        if (loginKey != null)
-            params.add(new BasicNameValuePair(loginKey,
-                DynamicJsUtil.encode32(DynamicJsUtil.bin216(Base32.encrypt("1111", loginKey)))));
+		if (loginKey != null) {
+			params.add(new BasicNameValuePair(loginKey, DynamicJsUtil
+					.getRandomParamValue(loginKey)));
+		}
+		else {
+			TicketMainFrame.remind("尚未生成登录key，请稍后...");
+		}
         params.add(new BasicNameValuePair("myversion", "undefined"));
         
         /*HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest", null);
@@ -327,19 +388,67 @@ public class TicketHttpClient {
         String result = null;
         try {
             String checkResult = doPostRequest(post, params);
-            JsonMsg4Login msg = JSONObject.parseObject(checkResult, JsonMsg4Login.class);
-            
-            if (!"Y".equals(msg.getData().getString("loginCheck"))) {// 登录不成功
-                result = msg.getMessages()[0];
-            }
-        }
+			JsonMsg4Login msg = JSONObject.parseObject(checkResult,
+					JsonMsg4Login.class);
+			if (!msg.getStatus()) {
+				result = msg.getMessages()[0];
+			} else {
+				String loginCheck = msg.getData().getString("loginCheck");
+				if (loginCheck == null || !loginCheck.equals("Y")) {// 登录不成功
+					result = msg.getMessages()[0];
+				}
+				else {
+					login(); //登录
+				}
+			}
+		}
         catch (Exception e) {
-            result = "登录异常!";
-            logger.error("登录发生异常", e);
-            TicketMainFrame.remind("登录发生异常");
+            result = "登录检查异常!";
+            logger.error("登录检查发生异常", e);
+            TicketMainFrame.remind("登录检查发生异常");
         }
         
         return result;
+    }
+    
+    public void login() {
+    	if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 登录---");
+        }
+    	
+    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+    	params.add(new BasicNameValuePair("_json_att", ""));
+    	
+    	HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/userLogin");
+        HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
+        
+        try {
+        	doPostRequest(post, params);
+        }
+        catch (Exception e) {
+        	logger.error("登录发生异常", e);
+        	TicketMainFrame.remind("登录发生异常");
+        	return;
+        }
+        
+        initMy12306();
+    }
+    
+    private void initMy12306() {
+    	if (logger.isDebugEnabled()) {
+            logger.debug("---ajax get 初始化我的12306---");
+        }
+    	HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/index/initMy12306");
+    	HttpHeader.setGetAjaxHeader(get);
+    	setCookie(get, null);
+    	
+    	try {
+    		doGetRequest(get);
+    	}
+    	catch (Exception e) {
+    		logger.error("初始化我的12306异常", e);
+    	}
     }
     
     public ContacterInfo[] getPassengers() {
@@ -466,6 +575,76 @@ public class TicketHttpClient {
         
     }
     
+    
+    /**
+     * 订单提交前获取加密参数
+     * @param cookieMap
+     */
+    public void leftTicketInit(Map<String, String> cookieMap) {
+    	if (logger.isDebugEnabled()) {
+            logger.debug("---ajax get 获取订单页dynamicJs的内容，从中提取出订票key---");
+        }
+    	
+    	HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/leftTicket/init");
+        HttpHeader.setLoginInitHeader(get);
+        setCookie(get, cookieMap);
+        
+        String leftTicketDynamicJs = null;
+        try {
+            String result = doGetRequest(get);
+
+			Matcher m_token = PATTERN_DYNAMIC_JS.matcher(result);
+			if (m_token.find()) {
+				leftTicketDynamicJs = m_token.group(1);
+			} else {
+				logger.error("httpClient init get leftTicketDynamicJsUrl  fail for unknow reason, check it!");
+			}
+        }
+        catch (Exception e) {
+            logger.error("leftTicketInit error : ", e);
+        }
+        
+        if (leftTicketDynamicJs != null) {
+        	orderTicketKey = getRandomParamKey(leftTicketDynamicJs);
+        }
+    }
+    
+    /**
+     * 判断用户是否已登录
+     * @return 是否登录
+     */
+    public boolean checkUserLogin() {
+    	if (logger.isDebugEnabled()) {
+            logger.debug("---ajax post 检查是否登录---");
+        }
+    	
+    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+    	params.add(new BasicNameValuePair("_json_att", ""));
+    	
+    	HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/checkUser");
+        HttpHeader.setPostAjaxHeader(post);
+        setCookie(post, null);
+        
+        boolean result = false;
+        try {
+        	String checkResult = doPostRequest(post, params);
+        	JsonMsg4Login msg = JSONObject.parseObject(checkResult,
+					JsonMsg4Login.class);
+			if (!msg.getStatus()) {
+				result = false;
+				System.out.println(msg.getMessages()[0]);
+			} else {
+				result = msg.getData().getBoolean("flag");
+			}
+        }
+        catch (Exception e) {
+        	logger.error("检查是否登录发生异常", e);
+        	TicketMainFrame.remind("检查是否登录发生异常");
+        }
+    	
+    	return result;
+    }
+    
     /**
      * <选择某个车次进入预订页前检验>
      * @param configInfo
@@ -478,22 +657,27 @@ public class TicketHttpClient {
             logger.debug("---ajax post 进入预订页面前检验---");
         }
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("NTQ3NjE2", "OWY2YmExNzM5OWM4YjJkNQ=="));
-        params.add(new BasicNameValuePair("myversion", "undefiend"));
-        try {
-            params.add(new BasicNameValuePair("secretStr", URLDecoder.decode(train.getSecretStr(), "UTF-8")));
-        }
-        catch (UnsupportedEncodingException e1) {
-            logger.error("进入预订页参数编码错误", e1);
-            TicketMainFrame.remind("预订页参数编码异常，请通知管理员!");
-            return "预订页参数编码异常，请通知管理员!";
-        }
+		if (orderTicketKey != null) {
+			params.add(new BasicNameValuePair(orderTicketKey, DynamicJsUtil
+					.getRandomParamValue(orderTicketKey)));
+		}
+        params.add(new BasicNameValuePair("myversion", "undefined"));
+//        try {
+//            params.add(new BasicNameValuePair("secretStr", URLDecoder.decode(train.getSecretStr(), "UTF-8")));
+            params.add(new BasicNameValuePair("secretStr", train.getSecretStr()));
+//        }
+//        catch (UnsupportedEncodingException e1) {
+//            logger.error("进入预订页参数编码错误", e1);
+//            TicketMainFrame.remind("预订页参数编码异常，请通知管理员!");
+//            return "预订页参数编码异常，请通知管理员!";
+//        }
         params.add(new BasicNameValuePair("train_date", configInfo.getTrain_date()));
         params.add(new BasicNameValuePair("back_train_date", DateUtils.formatDate(new Date())));
         params.add(new BasicNameValuePair("tour_flag", "dc"));//单程票标识
         params.add(new BasicNameValuePair("purpose_codes", configInfo.getPurpose_codes()));
         params.add(new BasicNameValuePair("query_from_station_name", configInfo.getFrom_station_name()));
         params.add(new BasicNameValuePair("query_to_station_name", configInfo.getTo_station_name()));
+        params.add(new BasicNameValuePair("undefined", ""));
         
         HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest");
         HttpHeader.setPostAjaxHeader(post);
@@ -553,12 +737,23 @@ public class TicketHttpClient {
         setCookie(post, cookieMap);
         
         String result = null;
+        String checkOrderDynamicJs = null;
         try {
             result = doPostRequest(post, params);
+            
+            // 获取订单确认key
+            Matcher m_token = PATTERN_DYNAMIC_JS.matcher(result);
+			if (m_token.find()) {
+				checkOrderDynamicJs = m_token.group(1);
+			}
         }
         catch (Exception e) {
             logger.error("进入单程票预订页", e);
             TicketMainFrame.remind("进入单程票预订页");
+        }
+        
+        if (checkOrderDynamicJs != null) {
+        	checkOrderKey = getRandomParamKey(checkOrderDynamicJs);
         }
         
         return result;
@@ -627,6 +822,10 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
         params.add(new BasicNameValuePair("tour_flag", "dc"));
         params.add(new BasicNameValuePair("_json_att", ""));
+		if (checkOrderKey != null) {
+			params.add(new BasicNameValuePair(checkOrderKey, DynamicJsUtil
+					.getRandomParamValue(checkOrderKey)));
+		}
         
         HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo");
         HttpHeader.setPostAjaxHeader(post);
@@ -786,12 +985,12 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---post 登录退出---");
         }
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/loginOut");
-        HttpHeader.setLogoutHeader(post);
-        setCookie(post, null);
+        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/login/loginOut");
+        HttpHeader.setGetAjaxHeader(get);
+        setCookie(get, null);
         
         try {
-            doPostRequest(post, null);
+            doGetRequest(get);
         }
         catch (Exception e) {
             logger.error("退出发生异常", e);
