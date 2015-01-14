@@ -18,7 +18,9 @@ import javax.swing.text.MaskFormatter;
 import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.MixData4UI;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainConfigInfo;
 import com.free.app.ticket.model.TrainData4UI;
+import com.free.app.ticket.model.TrainData4UI.UserTrainInfo;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.StationNameUtils;
 
@@ -32,7 +34,9 @@ public class ConfigPanelManager {
     
     private static JTextField toStation;
     
-    private static JLabel trainConfigTips;
+//    private static JLabel trainConfigTips;
+    
+    private static ConfigTrainPanel trainPanel = null;
     
     private static boolean isInited = false;
     
@@ -48,7 +52,7 @@ public class ConfigPanelManager {
             
             search_panel = new JPanel();
             // search_panel.setBounds(10, 394, 650, 63);
-            search_panel.setBounds(10, 6, 780, 54);
+            search_panel.setBounds(10, 6, 780, 100);
             search_panel.setLayout(new FlowLayout());
             frame.getContentPane().add(search_panel);
             search_panel.setBorder(new TitledBorder("第一步：输入乘车信息"));
@@ -93,7 +97,7 @@ public class ConfigPanelManager {
             trainDate.setColumns(11);
             
             JButton configButton = new JButton();
-            configButton.setText("车次设置");
+            configButton.setText("车次");
             configButton.setBounds(6, 22, 70, 28);
             search_panel.add(configButton);
             configButton.addActionListener(new ActionListener() {
@@ -101,15 +105,29 @@ public class ConfigPanelManager {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     trainData = ConfigDialog.showDialog(trainData);
+                    UserTrainInfo[] trains = trainData.getUserTrains();
+                    if (trains == null) {
+                        return;
+                    }
+                    for (int i = 0; i < trains.length; i++) {
+                        UserTrainInfo train = trains[i];
+                        if (train != null) {
+                            trainPanel.addTrain(train);
+                        }
+                    }
                 }
             });
             
-            trainConfigTips = new JLabel("未设置车次");
-            search_panel.add(trainConfigTips);
+//            trainConfigTips = new JLabel("未设置车次");
+//            search_panel.add(trainConfigTips);
+            
+            // 车次
+            trainPanel = new ConfigTrainPanel();
+            search_panel.add(trainPanel);
         }
     }
     
-    public static TicketConfigInfo getValidConfigInfo() {
+    public static TicketConfigInfo getTicketConfigInfo() {
         String fromStationName = fromStation.getText();
         String fromCode = StationNameUtils.getCityCode(fromStationName);
         String toStationName = toStation.getText();
@@ -134,6 +152,10 @@ public class ConfigPanelManager {
         }
         
         return new TicketConfigInfo(fromStationName, fromCode, toStationName, toCode, sTrainDate);
+    }
+    
+    public static TrainConfigInfo getTrainConfigInfo() {
+        return trainPanel.getTrainConfigInfo();
     }
     
     public static void bindUItoModel(MixData4UI mixData) {

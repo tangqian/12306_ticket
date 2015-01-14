@@ -73,6 +73,9 @@ public class TrainData4UI implements Serializable {
                 else if ("商务座/特等座".equals(itemName)) {
                     type = SeatType.BUSS_SEAT;
                 }
+                else if ("无座".equals(itemName)) {
+                    type = SeatType.NONE_SEAT;
+                }
                 return type;
             }
             
@@ -114,6 +117,9 @@ public class TrainData4UI implements Serializable {
                 else if ("高级软卧".equals(itemName)) {
                     type = SeatType.VAG_SLEEPER;
                 }
+                else if ("无座".equals(itemName)) {
+                    type = SeatType.NONE_SEAT;
+                }
                 return type;
             }
         };
@@ -121,10 +127,10 @@ public class TrainData4UI implements Serializable {
         private String label;
         
         private static String[] GAOTIEITEMS =
-        {"二等座", "一等座", "商务座/特等座"};
+        {"二等座", "一等座", "商务座/特等座", "无座"};
         
         private static String[] OTHERITEMS =
-        {"硬座", "软座", "硬卧", "软卧", "高级软卧"};
+        {"硬座", "软座", "硬卧", "软卧", "高级软卧", "无座"};
         
         private SeatOptionType(String label) {
             this.label = label;
@@ -191,6 +197,17 @@ public class TrainData4UI implements Serializable {
             this.trainCode = trainCode;
             this.bestSeatType = bestSeatType;
             this.worstSeatType = worstSeatType;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // TODO Auto-generated method stub
+            UserTrainInfo aTrainInfo = (UserTrainInfo)obj;
+            if (aTrainInfo.trainCode.equals(this.trainCode)) {
+                return true;
+            }
+            
+            return super.equals(obj);
         }
         
     }

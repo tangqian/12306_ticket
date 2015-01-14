@@ -4,24 +4,33 @@ import java.util.List;
 
 public class TicketBuyInfo {
 
-	private TicketConfigInfo configInfo;
+	private TicketConfigInfo ticketConfigInfo;
+	
+	private TrainConfigInfo trainConfigInfo = null;
 
 	private List<PassengerData> passengers;
 	
 	private String currentBuySeat;
 
-	public TicketBuyInfo(TicketConfigInfo configInfo, List<PassengerData> passengers) {
+	public TicketBuyInfo(TicketConfigInfo ticketConfigInfo, List<PassengerData> passengers) {
+	    super();
+        this.ticketConfigInfo = ticketConfigInfo;
+        this.passengers = passengers;
+    }
+	
+	public TicketBuyInfo(TicketConfigInfo ticketConfigInfo, List<PassengerData> passengers, TrainConfigInfo trainConfigInfo) {
 		super();
-		this.configInfo = configInfo;
+		this.ticketConfigInfo = ticketConfigInfo;
 		this.passengers = passengers;
+		this.trainConfigInfo = trainConfigInfo;
 	}
 
 	public List<PassengerData> getPassengers() {
 		return passengers;
 	}
 	
-	public TicketConfigInfo getConfigInfo() {
-		return configInfo;
+	public TicketConfigInfo getTicketConfigInfo() {
+		return ticketConfigInfo;
 	}
 
     public void setCurrentBuySeat(String currentBuySeat) {
@@ -30,6 +39,10 @@ public class TicketBuyInfo {
 
     public String getCurrentBuySeat() {
         return currentBuySeat;
+    }
+
+    public TrainConfigInfo getTrainConfigInfo() {
+        return trainConfigInfo;
     }
 
 	

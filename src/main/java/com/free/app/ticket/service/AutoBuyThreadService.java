@@ -18,8 +18,10 @@ import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.model.TicketBuyInfo;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainConfigInfo;
 import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.PassengerData.SeatType;
+import com.free.app.ticket.model.TrainConfigInfo.SpecificTrainInfo;
 import com.free.app.ticket.util.ComparatorTrain;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.TicketHttpClient;
@@ -54,22 +56,21 @@ public class AutoBuyThreadService extends Thread {
     
     public AutoBuyThreadService(TicketBuyInfo ticketBuyInfo) {
         this.buyInfo = ticketBuyInfo;
-        cookies = getCookie(ticketBuyInfo.getConfigInfo());
+        cookies = getCookie(ticketBuyInfo.getTicketConfigInfo());
     }
     
     @Override
     public void run() {
-    	TicketHttpClient client = HttpClientThreadService.getHttpClient();
-    	
-    	//获取订票key，value
-    	client.leftTicketInit(cookies);
-    	
+        TicketHttpClient client = HttpClientThreadService.getHttpClient();
+        // 获取提交订单动态参数
+        client.leftTicketInit(cookies);
+        
         int queryCount = 1;
         while (!isStop && !TicketMainFrame.isStop) {
             
             TicketMainFrame.trace("");
             TicketMainFrame.trace("第" + queryCount + "次余票查询");
-            List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getConfigInfo(), cookies);
+            List<TrainInfo> trainInfos = client.queryLeftTicket(buyInfo.getTicketConfigInfo(), cookies);
             queryCount++;
             if (trainInfos == null || trainInfos.isEmpty()) {
                 TicketMainFrame.trace("查询不到余票信息,3秒后开始下一轮查询");
@@ -119,10 +120,10 @@ public class AutoBuyThreadService extends Thread {
                 continue;
             }
             
-//            if (!client.checkUserLogin()) {
-//            	TicketMainFrame.trace("检查是否登录未通过");
-//            	continue;
-//            }
+            if (!client.checkUserLogin()) {
+                TicketMainFrame.trace("检查是否登录未通过");
+                continue;
+            }
             
             circularSubmitOrder(userPerfers);
             isStop = true;
@@ -131,9 +132,9 @@ public class AutoBuyThreadService extends Thread {
         
     }
     
-//    private void restart() {
-//    	new AutoBuyThreadService(buyInfo).run();
-//    }
+    private void restart() {
+        new AutoBuyThreadService(buyInfo).run();
+    }
     
     private boolean circularSubmitOrder(List<TrainInfo> userPerfers) {
         boolean result = false;
@@ -142,17 +143,17 @@ public class AutoBuyThreadService extends Thread {
         
         Set<String> failTrainSet = new HashSet<String>();//预订失败列车
         for (TrainInfo trainInfo : userPerfers) {
-        	if (TicketMainFrame.isStop) {
-        		break;
-        	}
-        	
+            if (TicketMainFrame.isStop) {
+                break;
+            }
+            
             String updateRet = updateTicket(trainInfo);//根据列车余票信息，确定用户所坐席位
             if (updateRet != null) {
                 TicketMainFrame.remind(updateRet);
                 continue;
             }
             
-            String submitResult = client.submitOrderRequest(buyInfo.getConfigInfo(), cookies, trainInfo);
+            String submitResult = client.submitOrderRequest(buyInfo.getTicketConfigInfo(), cookies, trainInfo);
             if (submitResult != null) {
                 failTrainSet.add(trainInfo.getStation_train_code());
                 TicketMainFrame.remind("车次[" + trainInfo.getStation_train_code() + "]进入预订页面前检查失败");
@@ -161,7 +162,7 @@ public class AutoBuyThreadService extends Thread {
                     break;
                 }
                 else if (submitResult.contains("网络繁忙")) {
-                	break;
+                    break;
                 }
                 else {
                     continue;
@@ -182,8 +183,10 @@ public class AutoBuyThreadService extends Thread {
                 break;
             }
             else if (chooseType == ChooseType.CANCELTHIS || chooseType == ChooseType.DEFAULT) {//取消预订当前
-            	TicketMainFrame.remind("您取消了当前车次[" + trainInfo.getStation_train_code() + "]的预订");
-                continue;
+                TicketMainFrame.remind("您取消了当前车次[" + trainInfo.getStation_train_code() + "]的预订");
+                
+                restart();
+                break;
             }
             else if (chooseType == ChooseType.SUCCESS) {
                 synchronized (obj) {
@@ -196,6 +199,9 @@ public class AutoBuyThreadService extends Thread {
                         }
                     }
                     waitFlag = true;
+                    
+                    restart();
+                    break;
                 }
             }
         }
@@ -218,13 +224,12 @@ public class AutoBuyThreadService extends Thread {
         else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
             seatType = SeatType.HARD_SEAT;
         }
-        else if(!TrainInfo.isSellOut(train.getYw_num())) {//硬卧
+        else if (!TrainInfo.isSellOut(train.getYw_num())) {//硬卧
             seatType = SeatType.HARD_SLEEPER;
         }
         else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
             seatType = SeatType.NONE_SEAT;
         }
-        
         
         if (seatType != null) {
             List<PassengerData> pass = buyInfo.getPassengers();
@@ -282,21 +287,35 @@ public class AutoBuyThreadService extends Thread {
      */
     private List<TrainInfo> getUserPerfer(List<TrainInfo> all) {
         List<TrainInfo> perfers = new ArrayList<TrainInfo>();
-        for (TrainInfo train : all) {
-            if (!TrainInfo.isSellOut(train.getZe_num())) {//二等座
-                perfers.add(train);
+        TrainConfigInfo trainConfigInfo = buyInfo.getTrainConfigInfo();
+        if (trainConfigInfo != null) {
+            List<SpecificTrainInfo> selTrainInfo = trainConfigInfo.getTrains();
+            for (SpecificTrainInfo specTrainInfo : selTrainInfo) {
+                TrainInfo trainInfo = specTrainInfo.convertToTrainInfo();
+                int index = all.indexOf(trainInfo);
+                if (index != -1) {
+                    perfers.add(all.get(index));
+                }
             }
-            else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
-                perfers.add(train);
-            }
-            else if (!TrainInfo.isSellOut(train.getYw_num())) {//硬卧
-            	perfers.add(train);
-            }
-            else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
-                perfers.add(train);
-            }
-            
         }
+        else {
+            for (TrainInfo train : all) {
+                if (!TrainInfo.isSellOut(train.getZe_num())) {//二等座
+                    perfers.add(train);
+                }
+                else if (!TrainInfo.isSellOut(train.getYz_num())) {//硬座
+                    perfers.add(train);
+                }
+                else if (!TrainInfo.isSellOut(train.getYw_num())) {//硬卧
+                    perfers.add(train);
+                }
+                else if (!TrainInfo.isSellOut(train.getWz_num())) {//无座
+                    perfers.add(train);
+                }
+                
+            }
+        }
+        
         return perfers;
     }
     
@@ -311,7 +330,7 @@ public class AutoBuyThreadService extends Thread {
         }
         
         TicketMainFrame.trace("-----下列车次可买，余票详情如下------");
-        for (int i = trains.size() - 1; i >=0; i--) {//最有希望买到的票最后打印
+        for (int i = trains.size() - 1; i >= 0; i--) {//最有希望买到的票最后打印
             TicketMainFrame.trace(trains.get(i).getStation_train_code() + ":" + trains.get(i).getLeftTicketInfo());
             
         }

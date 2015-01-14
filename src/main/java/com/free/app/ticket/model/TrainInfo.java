@@ -508,5 +508,16 @@ public class TrainInfo {
         return "TrainInfo [canWebBuy=" + canWebBuy + ", start_time=" + start_time + ", arrive_time=" + arrive_time
             + "]";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        // TODO Auto-generated method stub
+        TrainInfo aTrainInfo = (TrainInfo)obj;
+        if (aTrainInfo.getStation_train_code().equals(this.station_train_code)) {
+            return true;
+        }
+        
+        return super.equals(obj);
+    }
     
 }

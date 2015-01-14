@@ -3,20 +3,20 @@ package com.free.app.ticket.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+//import java.awt.event.ActionEvent;
+//import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
+//import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
+//import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -36,24 +36,24 @@ public class PassengerPanelManager {
     
     private static JTable table = null;
     
-    private static JTextField passengerName;
-    
-    private static JTextField cardNo;
-    
-    private static JTextField mobile;
+//    private static JTextField passengerName;
+//    
+//    private static JTextField cardNo;
+//    
+//    private static JTextField mobile;
     
     private static DefaultTableModel tableModel;
     
     private static boolean isInited = false;
     
+    @SuppressWarnings("serial")
     public static void init(JFrame frame) {
         if (!isInited) {
             isInited = true;
             parent = new JPanel();
             parent.setLayout(null);
-            parent.setBounds(10, 130, 780, 250);
+            parent.setBounds(10, 170, 780, 210);
             parent.setBorder(new TitledBorder("第三步：乘车人信息"));
-            parent.setToolTipText("双击删除乘客");
             frame.getContentPane().add(parent);
             
             JScrollPane scrollPane = new JScrollPane();
@@ -73,10 +73,11 @@ public class PassengerPanelManager {
             
             table = new JTable(tableModel);
             table.setDefaultRenderer(Integer.class, new MyRenderer());
+            table.setToolTipText("双击删除乘客");
             adjustView(table);
             scrollPane.setViewportView(table);
             
-            parent.add(getOperatePanel(tableModel));
+//            parent.add(getOperatePanel(tableModel));
             
             table.addMouseListener(new MouseAdapter() { // 鼠标事件
                 public void mouseClicked(MouseEvent e) {
@@ -84,22 +85,21 @@ public class PassengerPanelManager {
                 	//	双击删除一行
                 	if (e.getClickCount() == 2) {
                 		tableModel.removeRow(selectedRow);
-                		passengerName.setText("");
-                		cardNo.setText("");
-                		mobile.setText("");
+//                		passengerName.setText("");
+//                		cardNo.setText("");
+//                		mobile.setText("");
                 	}
-                	else {
-						Object oa = tableModel.getValueAt(selectedRow, 0);
-						Object ob = tableModel.getValueAt(selectedRow, 1);
-						Object oc = tableModel.getValueAt(selectedRow, 2);
-						passengerName.setText(oa.toString()); // 给文本框赋值
-						cardNo.setText(ob.toString());
-						mobile.setText(oc.toString());
-					}
+//                	else {
+//						Object oa = tableModel.getValueAt(selectedRow, 0);
+//						Object ob = tableModel.getValueAt(selectedRow, 1);
+//						Object oc = tableModel.getValueAt(selectedRow, 2);
+//						passengerName.setText(oa.toString()); // 给文本框赋值
+//						cardNo.setText(ob.toString());
+//						mobile.setText(oc.toString());
+//					}
                 }
             });
-            
-            
+           
         }
     }
     
@@ -160,75 +160,75 @@ public class PassengerPanelManager {
      * 
      * @param tableModel
      */
-    private static JPanel getOperatePanel(final DefaultTableModel tableModel) {
-        final JPanel panel = new JPanel();
-        panel.setBounds(10, 210, 770, 34);
-        
-        panel.add(new JLabel("姓名"));
-        passengerName = new JTextField("", 10);
-        panel.add(passengerName);
-        
-        panel.add(new JLabel("身份证号"));
-        cardNo = new JTextField("", 20);
-        panel.add(cardNo);
-        
-        panel.add(new JLabel("手机号码"));
-        mobile = new JTextField("", 13);
-        panel.add(mobile);
-        
-        final JButton addButton = new JButton("新增"); // 添加按钮
-        addButton.setToolTipText("新增购票乘客信息");
-        addButton.addActionListener(new ActionListener() {// 添加事件
-            public void actionPerformed(ActionEvent e) {
-                if (table.getRowCount() >= 5) {
-                    TicketMainFrame.remind("最多只能购买5张票!");
-                }
-                else {
-                    String[] rowValues =
-                    {passengerName.getText(), cardNo.getText(), mobile.getText()};
-                    tableModel.addRow(rowValues); // 添加一行
-                }
-                
-            }
-        });
-        panel.add(addButton);
-        
-        final JButton updateButton = new JButton("修改"); // 修改按钮
-        updateButton.setToolTipText("修改乘客信息，请先选择一行记录");
-        updateButton.addActionListener(new ActionListener() {// 添加事件
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = table.getSelectedRow();// 获得选中行的索引
-                if (selectedRow != -1) // 是否存在选中行
-                {
-                    // 修改指定的值：
-                    tableModel.setValueAt(passengerName.getText(), selectedRow, 0);
-                    tableModel.setValueAt(cardNo.getText(), selectedRow, 1);
-                    tableModel.setValueAt(mobile.getText(), selectedRow, 2);
-                }
-                else {
-                    TicketMainFrame.remind("请先选中一行乘客信息!");
-                }
-            }
-        });
-        panel.add(updateButton);
-        
-        final JButton delButton = new JButton("删除");
-        delButton.setToolTipText("删除乘客信息，请先选择一行记录");
-        delButton.addActionListener(new ActionListener() {// 添加事件
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = table.getSelectedRow();// 获得选中行的索引
-                if (selectedRow != -1) // 存在选中行
-                {
-                    tableModel.removeRow(selectedRow); // 删除行
-                }
-                else {
-                    TicketMainFrame.remind("请先选中一行乘客信息!");
-                }
-            }
-        });
-        panel.add(delButton);
-        return panel;
-    }
+//    private static JPanel getOperatePanel(final DefaultTableModel tableModel) {
+//        final JPanel panel = new JPanel();
+//        panel.setBounds(10, 210, 770, 34);
+//        
+//        panel.add(new JLabel("姓名"));
+//        passengerName = new JTextField("", 10);
+//        panel.add(passengerName);
+//        
+//        panel.add(new JLabel("身份证号"));
+//        cardNo = new JTextField("", 20);
+//        panel.add(cardNo);
+//        
+//        panel.add(new JLabel("手机号码"));
+//        mobile = new JTextField("", 13);
+//        panel.add(mobile);
+//        
+//        final JButton addButton = new JButton("新增"); // 添加按钮
+//        addButton.setToolTipText("新增购票乘客信息");
+//        addButton.addActionListener(new ActionListener() {// 添加事件
+//            public void actionPerformed(ActionEvent e) {
+//                if (table.getRowCount() >= 5) {
+//                    TicketMainFrame.remind("最多只能购买5张票!");
+//                }
+//                else {
+//                    String[] rowValues =
+//                    {passengerName.getText(), cardNo.getText(), mobile.getText()};
+//                    tableModel.addRow(rowValues); // 添加一行
+//                }
+//                
+//            }
+//        });
+//        panel.add(addButton);
+//        
+//        final JButton updateButton = new JButton("修改"); // 修改按钮
+//        updateButton.setToolTipText("修改乘客信息，请先选择一行记录");
+//        updateButton.addActionListener(new ActionListener() {// 添加事件
+//            public void actionPerformed(ActionEvent e) {
+//                int selectedRow = table.getSelectedRow();// 获得选中行的索引
+//                if (selectedRow != -1) // 是否存在选中行
+//                {
+//                    // 修改指定的值：
+//                    tableModel.setValueAt(passengerName.getText(), selectedRow, 0);
+//                    tableModel.setValueAt(cardNo.getText(), selectedRow, 1);
+//                    tableModel.setValueAt(mobile.getText(), selectedRow, 2);
+//                }
+//                else {
+//                    TicketMainFrame.remind("请先选中一行乘客信息!");
+//                }
+//            }
+//        });
+//        panel.add(updateButton);
+//        
+//        final JButton delButton = new JButton("删除");
+//        delButton.setToolTipText("删除乘客信息，请先选择一行记录");
+//        delButton.addActionListener(new ActionListener() {// 添加事件
+//            public void actionPerformed(ActionEvent e) {
+//                int selectedRow = table.getSelectedRow();// 获得选中行的索引
+//                if (selectedRow != -1) // 存在选中行
+//                {
+//                    tableModel.removeRow(selectedRow); // 删除行
+//                }
+//                else {
+//                    TicketMainFrame.remind("请先选中一行乘客信息!");
+//                }
+//            }
+//        });
+//        panel.add(delButton);
+//        return panel;
+//    }
     
     private static void adjustView(JTable table) {
         table.getTableHeader().setPreferredSize(new Dimension(0, 30));

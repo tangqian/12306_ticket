@@ -13,6 +13,7 @@ import com.free.app.ticket.TicketMainFrame;
 import com.free.app.ticket.model.PassengerData;
 import com.free.app.ticket.model.TicketBuyInfo;
 import com.free.app.ticket.model.TicketConfigInfo;
+import com.free.app.ticket.model.TrainConfigInfo;
 import com.free.app.ticket.service.AutoBuyThreadService;
 
 /**
@@ -91,10 +92,12 @@ public class RefreshPanelManager {
 						return;
 					}
 
-					TicketConfigInfo configInfo = ConfigPanelManager
-							.getValidConfigInfo();
-					if (configInfo == null || configInfo.getTrainDateAlias() == null)
+					TicketConfigInfo ticketConfigInfo = ConfigPanelManager
+							.getTicketConfigInfo();
+					if (ticketConfigInfo == null || ticketConfigInfo.getTrainDateAlias() == null)
 						return;
+					
+					TrainConfigInfo trainConfigInfo = ConfigPanelManager.getTrainConfigInfo();
 
 					StartBtn.this.setEnabled(false);
 
@@ -107,8 +110,8 @@ public class RefreshPanelManager {
 					TicketMainFrame.trace(tipsMsg);
 					
 					TicketMainFrame.isStop = false;
-					new AutoBuyThreadService(new TicketBuyInfo(configInfo,
-							passengers)).start();
+					new AutoBuyThreadService(new TicketBuyInfo(ticketConfigInfo,
+							passengers, trainConfigInfo)).start();
 				}
 
 			});
