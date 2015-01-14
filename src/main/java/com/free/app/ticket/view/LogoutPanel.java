@@ -90,7 +90,7 @@ public class LogoutPanel extends JPanel {
         logoutBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (JOptionPane.showConfirmDialog(frame, "确认退出登录吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+//                if (JOptionPane.showConfirmDialog(frame, "确认退出登录吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     new Thread(new Runnable() {
                         
                         @Override
@@ -104,7 +104,7 @@ public class LogoutPanel extends JPanel {
                         }
                     }).start();
                     LoginPanelManager.toggle();
-                }
+//                }
             }
         });
         this.add(logoutBtn);

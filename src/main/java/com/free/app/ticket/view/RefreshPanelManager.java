@@ -51,10 +51,10 @@ public class RefreshPanelManager {
 
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					if (JOptionPane.showConfirmDialog(TicketMainFrame.frame,
-							"确认停止刷票吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+//					if (JOptionPane.showConfirmDialog(TicketMainFrame.frame,
+//							"确认停止刷票吗？", "请选择", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					    stop();
-					}
+//					}
 				}
 			});
 		}
