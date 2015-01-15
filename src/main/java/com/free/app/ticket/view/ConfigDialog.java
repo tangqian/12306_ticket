@@ -212,27 +212,27 @@ public class ConfigDialog extends JDialog {
                 this.add(label);
                 
                 TrainTextField field = new TrainTextField(i);
-                field.setBounds(65, 21 + heightOneRow * i, 50, 21);
+                field.setBounds(65, 21 + heightOneRow * i, 60, 21);
                 field.setColumns(12);
                 trainTexts[i] = field;
                 this.add(field);
                 
                 JComboBox comboBox = new JComboBox();
                 comboBox.setToolTipText("最希望买到的席别");
-                comboBox.setBounds(130, 21 + heightOneRow * i, 80, 21);
+                comboBox.setBounds(140, 21 + heightOneRow * i, 105, 21);
                 boxBest[i] = comboBox;
                 this.add(comboBox);
                 
                 label = new JLabel("--");
                 label.setToolTipText("席别范围");
-                label.setBounds(215, 25 + heightOneRow * i, 20, 15);
+                label.setBounds(250, 25 + heightOneRow * i, 20, 15);
                 label.setHorizontalAlignment(SwingConstants.CENTER);
                 this.add(label);
                 
                 comboBox = new JComboBox();
                 comboBox.setToolTipText("实在买不到还能接受的席别，两者之间的席别也会进行购买");
                 boxWorst[i] = comboBox;
-                comboBox.setBounds(240, 21 + heightOneRow * i, 80, 21);
+                comboBox.setBounds(275, 21 + heightOneRow * i, 105, 21);
                 this.add(comboBox);
                 
             }
@@ -361,30 +361,30 @@ public class ConfigDialog extends JDialog {
                 e1.printStackTrace();
             }
             startTime = new JFormattedTextField(mf);
-            startTime.setBounds(130, 21, 40, 21);
+            startTime.setBounds(130, 21, 60, 21);
             this.add(startTime);
             startTime.setColumns(8);
             
             endTime = new JFormattedTextField(mf);
-            endTime.setBounds(175, 21, 40, 21);
+            endTime.setBounds(195, 21, 60, 21);
             this.add(endTime);
             endTime.setColumns(8);
             
             gaotieBoxBest = new JComboBox();
             gaotieBoxBest.setToolTipText("最希望买到的席别");
-            gaotieBoxBest.setBounds(130, 21 + heightOneRow * 1, 80, 21);
+            gaotieBoxBest.setBounds(130, 21 + heightOneRow * 1, 100, 21);
             SeatOptionType.GAOTIE.initItem(gaotieBoxBest, null);
             this.add(gaotieBoxBest);
             
             label = new JLabel("--");
             label.setToolTipText("席别范围");
-            label.setBounds(215, 25 + heightOneRow * 1, 20, 15);
+            label.setBounds(235, 25 + heightOneRow * 1, 20, 15);
             label.setHorizontalAlignment(SwingConstants.CENTER);
             this.add(label);
             
             gaotieBoxWorst = new JComboBox();
             gaotieBoxWorst.setToolTipText("实在买不到还能接受的席别，两者之间的席别也会进行购买");
-            gaotieBoxWorst.setBounds(240, 21 + heightOneRow * 1, 80, 21);
+            gaotieBoxWorst.setBounds(260, 21 + heightOneRow * 1, 100, 21);
             SeatOptionType.GAOTIE.initItem(gaotieBoxWorst, null);
             this.add(gaotieBoxWorst);
             

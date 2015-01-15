@@ -47,7 +47,7 @@ class LoginPanel extends JPanel {
     
     public LoginPanel() {
         //this.setBounds(10, 12, 650, 54);
-        this.setBounds(10, 68, 780, 54);
+        this.setBounds(10, 108, 780, 54);
         this.setLayout(null);
         this.setBorder(new TitledBorder("第二步：用户登录"));
         

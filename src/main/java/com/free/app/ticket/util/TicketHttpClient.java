@@ -71,9 +71,8 @@ import com.free.app.ticket.model.TrainInfo;
 import com.free.app.ticket.model.JsonMsg4LeftTicket.TrainQueryInfo;
 import com.free.app.ticket.model.PassengerData.SeatType;
 import com.free.app.ticket.service.AutoBuyThreadService.OrderToken;
-import com.free.app.ticket.util.DynamicJsUtil.Base32;
-import com.free.app.ticket.util.constants.Constants;
 import com.free.app.ticket.util.constants.HttpHeader;
+import com.free.app.ticket.util.constants.UrlConstants;
 
 /**
  * @author steven
@@ -91,7 +90,7 @@ public class TicketHttpClient {
     
     private String BIGipServerotn = null;
     
-    private String current_captcha_type;
+    private String current_captcha_type = null;
     
     private String loginKey = null;
     
@@ -101,7 +100,7 @@ public class TicketHttpClient {
     
     private static final int DEBBUG_MAX_COUNT = 1000;
     
-    private String query_url = "https://kyfw.12306.cn/otn/leftTicket/queryT";
+    private String query_url = UrlConstants.REQ_TICKET_QUERY_URL;
     
     private static final Pattern PATTERN_DYNAMIC_JS = Pattern.compile("/otn/dynamicJs/(\\w+)");
     
@@ -111,9 +110,9 @@ public class TicketHttpClient {
      * private static final String loginAuthCodeFilePath =
      * System.getProperty("user.dir") + File.separator + "login_authcode.jpg";
      */
-
+    
     /* loginUrl = path + "image" + File.separator + "passcode-login.jpg"; */
-
+    
     private TicketHttpClient(String JSESSIONID, String BIGipServerotn) {
         this.JSESSIONID = JSESSIONID;
         this.BIGipServerotn = BIGipServerotn;
@@ -124,9 +123,14 @@ public class TicketHttpClient {
      * @return
      */
     public static TicketHttpClient getInstance() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("获取cookies");
+            logger.debug("[get url] {}", UrlConstants.GET_LOGIN_INIT_URL);
+        }
+        
         TicketHttpClient instance = null;
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/login/init");
+        HttpGet get = new HttpGet(UrlConstants.GET_LOGIN_INIT_URL);
         HttpHeader.setLoginInitHeader(get);
         
         String JSESSIONID = null;
@@ -183,9 +187,9 @@ public class TicketHttpClient {
         }
         
         if (JSESSIONID != null && BIGipServerotn != null) {
-        	instance = new TicketHttpClient(JSESSIONID, BIGipServerotn);
+            instance = new TicketHttpClient(JSESSIONID, BIGipServerotn);
             if (loginDynamicJs != null) {
-            	instance.loginKey = instance.getRandomParamKey(loginDynamicJs);
+                instance.loginKey = instance.getRandomParamKey(loginDynamicJs);
             }
         }
         
@@ -198,11 +202,11 @@ public class TicketHttpClient {
      * @return
      */
     private String getRandomParamKey(String jsFileName) {
-    	if (logger.isDebugEnabled()) {
-            logger.debug("---ajax get 获取登录页dynamicJs的内容，从中提取出登录key---");
+        if (logger.isDebugEnabled()) {
+            logger.debug("---ajax get 获取dynamicJs的内容，从中提取出key---");
         }
         
-        String dynamicJsUrl = "https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName;
+        String dynamicJsUrl = UrlConstants.GET_DYNAMIC_JS_URL + jsFileName;
         HttpGet get = new HttpGet(dynamicJsUrl);
         HttpHeader.setCommonHeader(get);
         setCookie(get, null);
@@ -216,15 +220,15 @@ public class TicketHttpClient {
             Matcher m_token = PATTERN_LOGIN_KEY.matcher(result);
             if (m_token.find()) {
                 key = m_token.group(1);
-                System.out.println("key "+key);
+                System.out.println("key " + key);
             }
         }
         catch (Exception e) {
             logger.error("获取key出错", e);
             TicketMainFrame.remind("获取key出错");
         }
-    	
-    	return key;
+        
+        return key;
     }
     
     /**
@@ -232,38 +236,43 @@ public class TicketHttpClient {
      * @param jsStr
      */
     private void clearKeyTimmer(String jsStr) {
-    	if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 清除key失效时间---");
         }
-    	
-    	Matcher m_token = PATTERN_DYNAMIC_JS.matcher(jsStr);
+        
+        Matcher m_token = PATTERN_DYNAMIC_JS.matcher(jsStr);
         String jsFileName = null;
-    	if (m_token.find()) {
+        if (m_token.find()) {
             jsFileName = m_token.group(1);
         }
-    	if (jsFileName == null) {
-    		logger.error("清除key失效时间出错");
-    	}
+        if (jsFileName == null) {
+            logger.error("清除key失效时间出错");
+        }
         
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
-    	params.add(new BasicNameValuePair("_json_att", ""));
-    	
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
         String dynamicJsUrl = "https://kyfw.12306.cn/otn/dynamicJs/" + jsFileName;
         HttpPost post = new HttpPost(dynamicJsUrl);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
         try {
-        	doPostRequest(post, params);
+            doPostRequest(post, params);
         }
         catch (Exception e) {
-        	logger.error("清除key失效时间出错", e);
+            logger.error("清除key失效时间出错", e);
         }
     }
     
     public File buildLoginCodeImage() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("获取验证码");
+            logger.debug("[get url] {}", UrlConstants.GET_LOGIN_PASSCODE_URL);
+        }
+        
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=login&rand=sjrand");
+        HttpGet get = new HttpGet(UrlConstants.GET_LOGIN_PASSCODE_URL);
         HttpHeader.setLoginAuthCodeHeader(get);
         setCookie(get, null);
         
@@ -323,12 +332,13 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 检查验证码---");
         }
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair(Constants.CHECKCODE_PARAMS_RANDCODE, authCode));
-        params.add(new BasicNameValuePair(Constants.CHECKCODE_PARAMS_RAND, "sjrand"));
-        params.add(new BasicNameValuePair(Constants.RANDCODE_VALIDATE, ""));
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn");
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("randCode", authCode));
+        params.add(new BasicNameValuePair("rand", "sjrand"));
+        params.add(new BasicNameValuePair("randCode_validate", ""));
+        
+        HttpPost post = new HttpPost(UrlConstants.REQ_CHECK_CODE_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
@@ -370,38 +380,35 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("userDTO.password", password));
         params.add(new BasicNameValuePair("randCode", authcode));
         params.add(new BasicNameValuePair("randCode_validate", ""));
-		if (loginKey != null) {
-			params.add(new BasicNameValuePair(loginKey, DynamicJsUtil
-					.getRandomParamValue(loginKey)));
-		}
-		else {
-			TicketMainFrame.remind("尚未生成登录key，请稍后...");
-		}
+        if (loginKey != null) {
+            params.add(new BasicNameValuePair(loginKey, DynamicJsUtil.getRandomParamValue(loginKey)));
+        }
+        else {
+            TicketMainFrame.remind("尚未生成登录key，请稍后...");
+        }
         params.add(new BasicNameValuePair("myversion", "undefined"));
         
-        /*HttpPost post = getHttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest", null);
-        HttpHeader.setPostAjaxHeader(post);*/
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/loginAysnSuggest");
+        HttpPost post = new HttpPost(UrlConstants.REQ_LOGIN_AYSN_SUGGEST_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
         String result = null;
         try {
             String checkResult = doPostRequest(post, params);
-			JsonMsg4Login msg = JSONObject.parseObject(checkResult,
-					JsonMsg4Login.class);
-			if (!msg.getStatus()) {
-				result = msg.getMessages()[0];
-			} else {
-				String loginCheck = msg.getData().getString("loginCheck");
-				if (loginCheck == null || !loginCheck.equals("Y")) {// 登录不成功
-					result = msg.getMessages()[0];
-				}
-				else {
-					login(); //登录
-				}
-			}
-		}
+            JsonMsg4Login msg = JSONObject.parseObject(checkResult, JsonMsg4Login.class);
+            if (!msg.getStatus()) {
+                result = msg.getMessages()[0];
+            }
+            else {
+                String loginCheck = msg.getData().getString("loginCheck");
+                if (loginCheck == null || !loginCheck.equals("Y")) {// 登录不成功
+                    result = msg.getMessages()[0];
+                }
+                else {
+                    login(); //登录
+                }
+            }
+        }
         catch (Exception e) {
             result = "登录检查异常!";
             logger.error("登录检查发生异常", e);
@@ -412,50 +419,50 @@ public class TicketHttpClient {
     }
     
     public void login() {
-    	if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 登录---");
         }
-    	
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
-    	params.add(new BasicNameValuePair("_json_att", ""));
-    	
-    	HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/userLogin");
+        
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
+        HttpPost post = new HttpPost(UrlConstants.REQ_LOGIN_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
         try {
-        	doPostRequest(post, params);
+            doPostRequest(post, params);
         }
         catch (Exception e) {
-        	logger.error("登录发生异常", e);
-        	TicketMainFrame.remind("登录发生异常");
-        	return;
+            logger.error("登录发生异常", e);
+            TicketMainFrame.remind("登录发生异常");
+            return;
         }
         
         initMy12306();
     }
     
     private void initMy12306() {
-    	if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("---ajax get 初始化我的12306---");
         }
-    	HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/index/initMy12306");
-    	HttpHeader.setGetAjaxHeader(get);
-    	setCookie(get, null);
-    	
-    	try {
-    		doGetRequest(get);
-    	}
-    	catch (Exception e) {
-    		logger.error("初始化我的12306异常", e);
-    	}
+        HttpGet get = new HttpGet(UrlConstants.GET_INIT_MY_12306_URL);
+        HttpHeader.setGetAjaxHeader(get);
+        setCookie(get, null);
+        
+        try {
+            doGetRequest(get);
+        }
+        catch (Exception e) {
+            logger.error("初始化我的12306异常", e);
+        }
     }
     
     public ContacterInfo[] getPassengers() {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 获取联系人---");
         }
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs");
+        HttpPost post = new HttpPost(UrlConstants.REQ_PASSENGERS_QUERY_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
@@ -523,7 +530,6 @@ public class TicketHttpClient {
                     String[] tips = msg.getMessages();
                     if (tips != null && tips.length > 0) {
                         if (tips[0].contains("非法")) {
-                            //query_url = "https://kyfw.12306.cn/otn/leftTicket/query";
                             logger.error("查询余票时出现错误：" + tips[0]);
                         }
                     }
@@ -531,12 +537,12 @@ public class TicketHttpClient {
             }
             else {
                 if (StringUtils.isNotEmpty(msg.getC_url())) {//切换地址了
-                    query_url = "https://kyfw.12306.cn/otn/" + msg.getC_url();
+                    query_url = UrlConstants.GET_BASE_URL + msg.getC_url();
                 }
             }
         }
         catch (JSONException e) {
-            query_url = "https://kyfw.12306.cn/otn/leftTicket/query";
+            query_url = UrlConstants.REQ_TICKET_QUERY_URL2;
             logger.error("查询余票异常，内容异常", e);
             TicketMainFrame.remind("查询余票异常，内容异常");
         }
@@ -558,7 +564,7 @@ public class TicketHttpClient {
             logger.debug("---ajax get 查询余票前先LOG---");
         }
         
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/leftTicket/log?" + paramsUrl);
+        HttpGet get = new HttpGet(UrlConstants.GET_TICKET_QUERY_LOG_URL + "?" + paramsUrl);
         HttpHeader.setGetAjaxHeader(get);
         setCookie(get, cookieMap);
         
@@ -575,37 +581,37 @@ public class TicketHttpClient {
         
     }
     
-    
     /**
-     * 订单提交前获取加密参数
+     * 订单提交前获取动态参数
      * @param cookieMap
      */
     public void leftTicketInit(Map<String, String> cookieMap) {
-    	if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("---ajax get 获取订单页dynamicJs的内容，从中提取出订票key---");
         }
-    	
-    	HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/leftTicket/init");
+        
+        HttpGet get = new HttpGet(UrlConstants.GET_LEFT_TICKET_INIT_URL);
         HttpHeader.setLoginInitHeader(get);
         setCookie(get, cookieMap);
         
         String leftTicketDynamicJs = null;
         try {
             String result = doGetRequest(get);
-
-			Matcher m_token = PATTERN_DYNAMIC_JS.matcher(result);
-			if (m_token.find()) {
-				leftTicketDynamicJs = m_token.group(1);
-			} else {
-				logger.error("httpClient init get leftTicketDynamicJsUrl  fail for unknow reason, check it!");
-			}
+            
+            Matcher m_token = PATTERN_DYNAMIC_JS.matcher(result);
+            if (m_token.find()) {
+                leftTicketDynamicJs = m_token.group(1);
+            }
+            else {
+                logger.error("httpClient init get leftTicketDynamicJsUrl  fail for unknow reason, check it!");
+            }
         }
         catch (Exception e) {
             logger.error("leftTicketInit error : ", e);
         }
         
         if (leftTicketDynamicJs != null) {
-        	orderTicketKey = getRandomParamKey(leftTicketDynamicJs);
+            orderTicketKey = getRandomParamKey(leftTicketDynamicJs);
         }
     }
     
@@ -614,35 +620,35 @@ public class TicketHttpClient {
      * @return 是否登录
      */
     public boolean checkUserLogin() {
-    	if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("---ajax post 检查是否登录---");
         }
-    	
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
-    	params.add(new BasicNameValuePair("_json_att", ""));
-    	
-    	HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/login/checkUser");
+        
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("_json_att", ""));
+        
+        HttpPost post = new HttpPost(UrlConstants.REQ_CHECK_USER_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, null);
         
         boolean result = false;
         try {
-        	String checkResult = doPostRequest(post, params);
-        	JsonMsg4Login msg = JSONObject.parseObject(checkResult,
-					JsonMsg4Login.class);
-			if (!msg.getStatus()) {
-				result = false;
-				System.out.println(msg.getMessages()[0]);
-			} else {
-				result = msg.getData().getBoolean("flag");
-			}
+            String checkResult = doPostRequest(post, params);
+            JsonMsg4Login msg = JSONObject.parseObject(checkResult, JsonMsg4Login.class);
+            if (!msg.getStatus()) {
+                result = false;
+                System.out.println(msg.getMessages()[0]);
+            }
+            else {
+                result = msg.getData().getBoolean("flag");
+            }
         }
         catch (Exception e) {
-        	logger.error("检查是否登录发生异常", e);
-        	TicketMainFrame.remind("检查是否登录发生异常");
+            logger.error("检查是否登录发生异常", e);
+            TicketMainFrame.remind("检查是否登录发生异常");
         }
-    	
-    	return result;
+        
+        return result;
     }
     
     /**
@@ -657,20 +663,19 @@ public class TicketHttpClient {
             logger.debug("---ajax post 进入预订页面前检验---");
         }
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-		if (orderTicketKey != null) {
-			params.add(new BasicNameValuePair(orderTicketKey, DynamicJsUtil
-					.getRandomParamValue(orderTicketKey)));
-		}
+        if (orderTicketKey != null) {
+            params.add(new BasicNameValuePair(orderTicketKey, DynamicJsUtil.getRandomParamValue(orderTicketKey)));
+        }
         params.add(new BasicNameValuePair("myversion", "undefined"));
-//        try {
-//            params.add(new BasicNameValuePair("secretStr", URLDecoder.decode(train.getSecretStr(), "UTF-8")));
-            params.add(new BasicNameValuePair("secretStr", train.getSecretStr()));
-//        }
-//        catch (UnsupportedEncodingException e1) {
-//            logger.error("进入预订页参数编码错误", e1);
-//            TicketMainFrame.remind("预订页参数编码异常，请通知管理员!");
-//            return "预订页参数编码异常，请通知管理员!";
-//        }
+        try {
+            params.add(new BasicNameValuePair("secretStr", URLDecoder.decode(train.getSecretStr(), "UTF-8")));
+        }
+        catch (UnsupportedEncodingException e1) {
+            logger.error("进入预订页参数编码错误", e1);
+            TicketMainFrame.remind("预订页参数编码异常，请通知管理员!");
+            return "预订页参数编码异常，请通知管理员!";
+        }
+        //        params.add(new BasicNameValuePair("secretStr", train.getSecretStr()));
         params.add(new BasicNameValuePair("train_date", configInfo.getTrain_date()));
         params.add(new BasicNameValuePair("back_train_date", DateUtils.formatDate(new Date())));
         params.add(new BasicNameValuePair("tour_flag", "dc"));//单程票标识
@@ -679,7 +684,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("query_to_station_name", configInfo.getTo_station_name()));
         params.add(new BasicNameValuePair("undefined", ""));
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest");
+        HttpPost post = new HttpPost(UrlConstants.REQ_SUBMIT_ORDER_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, cookieMap);
         
@@ -732,7 +737,7 @@ public class TicketHttpClient {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/initDc");
+        HttpPost post = new HttpPost(UrlConstants.REQ_INITDC_URL);
         HttpHeader.setInitDcHeader(post);
         setCookie(post, cookieMap);
         
@@ -743,9 +748,9 @@ public class TicketHttpClient {
             
             // 获取订单确认key
             Matcher m_token = PATTERN_DYNAMIC_JS.matcher(result);
-			if (m_token.find()) {
-				checkOrderDynamicJs = m_token.group(1);
-			}
+            if (m_token.find()) {
+                checkOrderDynamicJs = m_token.group(1);
+            }
         }
         catch (Exception e) {
             logger.error("进入单程票预订页", e);
@@ -753,7 +758,7 @@ public class TicketHttpClient {
         }
         
         if (checkOrderDynamicJs != null) {
-        	checkOrderKey = getRandomParamKey(checkOrderDynamicJs);
+            checkOrderKey = getRandomParamKey(checkOrderDynamicJs);
         }
         
         return result;
@@ -762,9 +767,10 @@ public class TicketHttpClient {
     public File buildOrderCodeImage(Map<String, String> cookies) {
         if (logger.isDebugEnabled()) {
             logger.debug("---ajax get 获取提交订单验证码---");
+            logger.debug("[get url] {}", UrlConstants.GET_ORDER_PASSCODE_URL);
         }
         HttpClient httpclient = buildHttpClient();
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp");
+        HttpGet get = new HttpGet(UrlConstants.GET_ORDER_PASSCODE_URL);
         HttpHeader.setLoginAuthCodeHeader(get);
         setCookie(get, cookies);
         
@@ -822,12 +828,11 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
         params.add(new BasicNameValuePair("tour_flag", "dc"));
         params.add(new BasicNameValuePair("_json_att", ""));
-		if (checkOrderKey != null) {
-			params.add(new BasicNameValuePair(checkOrderKey, DynamicJsUtil
-					.getRandomParamValue(checkOrderKey)));
-		}
+        if (checkOrderKey != null) {
+            params.add(new BasicNameValuePair(checkOrderKey, DynamicJsUtil.getRandomParamValue(checkOrderKey)));
+        }
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo");
+        HttpPost post = new HttpPost(UrlConstants.REQ_CHECK_ORDER_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, cookieMap);
         
@@ -874,7 +879,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_date", df.format(trianDate) + " 00:00:00 GMT+0800"));//Sun Feb 01 2015 00:00:00 GMT+0800
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount");
+        HttpPost post = new HttpPost(UrlConstants.REQ_QUEUE_COUNT_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, cookieMap);
         
@@ -917,7 +922,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("train_location", train.getLocation_code()));
         params.add(new BasicNameValuePair("_json_att", ""));
         
-        HttpPost post = new HttpPost("https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue");
+        HttpPost post = new HttpPost(UrlConstants.REQ_CONFIRM_SINGLE_URL);
         HttpHeader.setPostAjaxHeader(post);
         setCookie(post, cookieMap);
         
@@ -961,7 +966,7 @@ public class TicketHttpClient {
         params.add(new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token));
         String paramsUrl = URLEncodedUtils.format(params, "UTF-8");
         
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime" + "?" + paramsUrl);
+        HttpGet get = new HttpGet(UrlConstants.GET_QUERY_ORDER_WAIT_URL + "?" + paramsUrl);
         HttpHeader.setGetAjaxHeader(get);
         setCookie(get, cookieMap);
         
@@ -985,7 +990,7 @@ public class TicketHttpClient {
         if (logger.isDebugEnabled()) {
             logger.debug("---post 登录退出---");
         }
-        HttpGet get = new HttpGet("https://kyfw.12306.cn/otn/login/loginOut");
+        HttpGet get = new HttpGet(UrlConstants.GET_LOGOUT_URL);
         HttpHeader.setGetAjaxHeader(get);
         setCookie(get, null);
         
@@ -1061,9 +1066,14 @@ public class TicketHttpClient {
                 if (params == null)
                     logger.debug("[post params] null");
                 else {
-                    logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));
-                    /*if (!URLEncodedUtils.format(params, "UTF-8").contains("password"))//不打印密码参数
-                        logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));*/
+//                    logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));
+                    //不打印密码参数
+                    if (!URLEncodedUtils.format(params, "UTF-8").contains("password")) {
+                        logger.debug("[post params] {}", URLEncodedUtils.format(params, "UTF-8"));
+                    }
+                    else {
+                        logger.debug("[post params] {包含密码不打日志，安全第一，呵呵}");
+                    }
                 }
             }
             HttpResponse response = httpclient.execute(request);
@@ -1170,12 +1180,15 @@ public class TicketHttpClient {
                 cookie += "; " + entry.getKey() + "=" + entry.getValue();
             }
             cookie += ";BIGipServerotn=" + BIGipServerotn;
-            cookie += ";current_captcha_type=" + current_captcha_type;
+            if (current_captcha_type != null) {
+                cookie += ";current_captcha_type=" + current_captcha_type;
+            }
         }
         else {
-            cookie =
-                "JSESSIONID=" + JSESSIONID + ";BIGipServerotn=" + BIGipServerotn + ";current_captcha_type="
-                    + current_captcha_type;
+            cookie = "JSESSIONID=" + JSESSIONID + ";BIGipServerotn=" + BIGipServerotn;
+            if (current_captcha_type != null) {
+                cookie += ";current_captcha_type=" + current_captcha_type;
+            }
         }
         logger.debug("[request cooikes] {}", cookie);
         return cookie;
