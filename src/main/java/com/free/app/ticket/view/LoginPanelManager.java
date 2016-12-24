@@ -43,8 +43,7 @@ public class LoginPanelManager {
         else {
             logout_panel.setVisible(false);
             login_panel.setVisible(true);
-            login_panel.authcode.setText("");
-            login_panel.authcode.requestFocus();
+            login_panel.authCode = null;
         }
     }
     
@@ -57,12 +56,17 @@ public class LoginPanelManager {
     }
     
     public static void requestFocus2Authcode() {
-        login_panel.authcode.requestFocus();
+        login_panel.authCode = null;
+        VerifyCodeDialog.getInstance().setVisible(true);
     }
     
     public static void requestFocus2Password() {
         login_panel.password.setText("");
         login_panel.password.requestFocus();
+    }
+
+    public static void setAuthCode(String authCode){
+        login_panel.authCode = authCode;
     }
     
 
@@ -76,14 +80,6 @@ public class LoginPanelManager {
      */
     public static void setLoginEnabled() {
         login_panel.loginBtn.setLoginEnabled();
-    }
-    
-    /**
-     * <更新授权码>
-     * @param icon
-     */
-    public static void setIcon(ImageIcon icon) {
-        login_panel.code.setIcon(icon);
     }
 
 	public static void bindUItoModel(MixData4UI mixData) {

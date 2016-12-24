@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
+import com.free.app.ticket.view.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,6 @@ import com.free.app.ticket.model.MixData4UI;
 import com.free.app.ticket.service.HttpClientThreadService;
 import com.free.app.ticket.util.DateUtils;
 import com.free.app.ticket.util.ResManager;
-import com.free.app.ticket.view.ConfigPanelManager;
-import com.free.app.ticket.view.ConsolePane;
-import com.free.app.ticket.view.LoginPanelManager;
-import com.free.app.ticket.view.LogoutPanel;
-import com.free.app.ticket.view.PassengerPanelManager;
-import com.free.app.ticket.view.RefreshPanelManager;
 
 /**
  * 主窗口类
@@ -86,6 +81,9 @@ public class TicketMainFrame extends JFrame {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     frame = new TicketMainFrame();
                     frame.setVisible(true);
+                    VerifyCodeDialog instance = VerifyCodeDialog.getInstance();
+                    instance.setLocationRelativeTo(frame);
+                    instance.setVisible(true);
                 }
                 catch (Exception e) {
                     logger.error("init mainframe error : ", e);
@@ -93,10 +91,11 @@ public class TicketMainFrame extends JFrame {
             }
         });
     }
-    
+
     public TicketMainFrame() {
         initView();
         new HttpClientThreadService().start();
+        //VerifyCodeDialog.getInstance().setVisible(true);
     }
     
     /**

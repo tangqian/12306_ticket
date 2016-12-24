@@ -45,10 +45,9 @@ public class LoginThreadService extends Thread {
 						LoginPanelManager.requestFocus2Username();
 					} else if (result.startsWith("验证码")) {
 						LoginPanelManager.requestFocus2Authcode();
+                        new HttpClientThreadService().start();// 重新获取验证码
 					}
-
-					TicketMainFrame.alert(result);
-					new HttpClientThreadService().start();// 重新获取验证码
+                    TicketMainFrame.remind(result);
 				}
             }
         }
