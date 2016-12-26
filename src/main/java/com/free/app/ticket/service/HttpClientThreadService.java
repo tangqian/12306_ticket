@@ -32,15 +32,13 @@ public class HttpClientThreadService extends Thread {
                 if (imageFile != null && imageFile.exists()) {
                     ImageIcon icon = new ImageIcon(imageFile.getAbsolutePath());
                     icon.setImage(icon.getImage()
-                        .getScaledInstance(icon.getIconWidth(), icon.getIconHeight(), Image.SCALE_DEFAULT));
-                    VerifyCodeDialog.getInstance().code.setText(null);
-                    VerifyCodeDialog.getInstance().code.setIcon(icon);
+                            .getScaledInstance(icon.getIconWidth(), icon.getIconHeight(), Image.SCALE_DEFAULT));
+                    VerifyCodeDialog.getInstance().showCode(null, icon);
                     TicketMainFrame.isInited = true;
                     TicketMainFrame.trace("获取验证码成功");
                 }
                 else {
-                    VerifyCodeDialog.getInstance().code.setIcon(null);
-                    VerifyCodeDialog.getInstance().code.setText("获取验证码失败，请检查网络或点击刷新");
+                    VerifyCodeDialog.getInstance().showCode("获取验证码失败，请检查网络或点击刷新", null);
                     TicketMainFrame.remind("获取验证码失败,请检查网络是否正常");
                 }
             }

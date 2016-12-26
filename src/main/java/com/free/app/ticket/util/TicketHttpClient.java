@@ -336,7 +336,7 @@ public class TicketHttpClient {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("randCode", authCode));
         params.add(new BasicNameValuePair("rand", "sjrand"));
-        params.add(new BasicNameValuePair("randCode_validate", ""));
+        //params.add(new BasicNameValuePair("randCode_validate", ""));
         
         HttpPost post = new HttpPost(UrlConstants.REQ_CHECK_CODE_URL);
         HttpHeader.setPostAjaxHeader(post);
